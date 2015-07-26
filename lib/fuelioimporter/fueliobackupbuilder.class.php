@@ -5,6 +5,7 @@ namespace FuelioImporter;
 class FuelioBackupBuilder extends \SplTempFileObject {
     
     const DATE_FORMAT = 'd.m.Y';
+    const SAFE_CATEGORY_ID = 50;
 
     public function writeVehicleHeader()
     {

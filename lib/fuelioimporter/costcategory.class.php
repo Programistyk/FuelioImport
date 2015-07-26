@@ -20,6 +20,11 @@ class CostCategory implements IBackupEntry
         return $this->type_id;
     }
     
+    public function setTypeId($iId)
+    {
+        $this->type_id = $iId;
+    }
+    
     public function getName()
     {
         return $this->name;

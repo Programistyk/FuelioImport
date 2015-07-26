@@ -8,6 +8,8 @@ use FuelioImporter\IConverter;
 use FuelioImporter\FuelioBackupBuilder;
 use FuelioImporter\Vehicle;
 use FuelioImporter\FuelLogEntry;
+use FuelioImporter\CostCategory;
+use FuelioImporter\Cost;
 use \SimpleXMLElement;
 use \DateTime;
 
@@ -17,6 +19,8 @@ class AcarProvider implements IConverter {
     protected $archive_files;
     protected $metadata = array();
     protected $preferences = array();
+    protected $expenses = array();
+    protected $services = array();
 
     public function getName() {
         return 'acar';
@@ -64,10 +68,8 @@ class AcarProvider implements IConverter {
         // Process fuellings
         $this->processFuellings($data, $in, $out);
 
-        $out->writeCostCategoriesHeader();
-
-        $out->writeCoststHeader();
-
+        // Process Costs (expenses and services)
+        $this->processCosts($data, $in, $out);
 
         $in->close();
         $out->rewind();
@@ -156,16 +158,21 @@ class AcarProvider implements IConverter {
             case 'mi' :
                 return Vehicle::MILES;
             case 'km':
-            default:
                 return Vehicle::KILOMETERS;
+            default:
+                throw new \FuelioImporter\InvalidUnitException();
         }
     }
 
     protected function getConsumptionUnit() {
+        // TODO: check the format behind other options:
+        // mpg (us), mpg (imperial), gal/100mi (us), gal/100mi (imperial), km/L, km/gal (us), km/gal (imperial). mi/L
         switch ($this->preferences['acar.fuel-efficiency-unit']) {
+
             case 'L/100km':
-            default:
                 return Vehicle::L_PER_100KM;
+            default:
+                throw new \FuelioImporter\InvalidUnitException();
         }
     }
 
@@ -189,26 +196,174 @@ class AcarProvider implements IConverter {
         return $children[$iVehicle];
     }
 
+    /**
+     * Converts aCars date to something more PHP friendly
+     * @param string $date
+     * @return string ATOM-formatted DateTime string
+     */
+    protected function readDate($date) {
+        $dt = DateTime::createFromFormat('m/d/Y - H:i', (string) $date);
+        return $dt->format(DateTime::ATOM);
+    }
+
     protected function processFuellings(SimpleXMLElement $data, ZipArchive $in, FuelioBackupBuilder $out) {
         $out->writeFuelLogHeader();
 
         foreach ($data->{'fillup-records'}->{'fillup-record'} as $record) {
             $entry = new FuelLogEntry();
-            // Date format is ugly..
-            $date_string = (string) $record->date;
-            $dt = DateTime::createFromFormat('m/d/Y - H:i', $date_string);
-            $entry->setDate($dt->format(DateTime::ATOM));
 
+            $entry->setDate($this->readDate($record->date));
             $entry->setFuel((string) $record->volume);
             $entry->setPrice((string) $record->{'total-cost'});
             $entry->setOdo((string) $record->{'odometer-reading'});
-            $entry->setConsumption((string) $record->{'fuel-efficiency'});
+            // We need to calculate fuel consumption to fuelios format
+            $consumption = (string) $record->{'fuel-efficiency'};
+            $entry->setConsumption($this->calculateConsumption($consumption, $this->getConsumptionUnit()));
             $entry->setGeoCoords((string) $record->latitude, (string) $record->longitude);
             $entry->setFullFillup((string) $record->partial != 'true');
             $entry->setMissedEntries((string) $record->{'previous-missed-fillups'} == 'true');
             $notes = (string) $record->{'fuel-brand'} . ' ' . (string) $record->{'fueling-station-address'} . ' ' . (string) $record->notes;
             $entry->setNotes(trim($notes));
+            $entry->setMissedEntries(0);
             $out->writeFuelLog($entry);
+        }
+    }
+
+    /**
+     * Do not blame me for this calculations, got them online
+     * @param float $consumption Fuel consumption
+     * @param int $iFormat Consumption unit
+     * @return float Fuel consumption at L/100km
+     * @throws \FuelioImporter\InvalidUnitException
+     */
+    protected function calculateConsumption($consumption, $iFormat) {
+        $dConsumption = floatval(str_replace(',', '.', $consumption));
+        switch ($iFormat) {
+            case Vehicle::MPG_US:
+                $rate = 235.21458329475;
+                break;
+            case Vehicle::MPG_UK:
+                $rate = 282.48093627967;
+                break;
+            case Vehicle::KM_PER_L;
+                return 100.0 / $dConsumption;
+            case Vehicle::L_PER_100KM:
+                return $dConsumption;
+            case Vehicle::KM_PER_GAL_US:
+                $rate = 378.541178;
+                break;
+            case Vehicle::KM_PER_GAL_UK:
+                $rate = 454.609188;
+            default:
+                throw new \FuelioImporter\InvalidUnitException();
+        }
+
+        return $rate / $dConsumption;
+    }
+
+    protected function readServicesAsCategories(ZipArchive $in) {
+        $xml = new \SimpleXMLElement(stream_get_contents($in->getStream('services.xml')));
+        foreach ($xml->service as $service) {
+            $atts = $service->attributes();
+            $id = intval($atts['id']);
+            $name = (string) $service->name;
+            $this->services[$id] = new CostCategory(count($this->services), $name);
+        }
+    }
+
+    protected function readExpensesAsCategories(ZipArchive $in) {
+        $xml = new \SimpleXMLElement(stream_get_contents($in->getStream('expenses.xml')));
+        foreach ($xml->expense as $expense) {
+            $atts = $expense->attributes();
+            $id = intval($atts['id']);
+            $name = (string) $expense->name;
+            $this->expenses[$id] = new CostCategory(count($this->expenses), $name);
+        }
+    }
+
+    protected function processCostCategories(ZipArchive $in, FuelioBackupBuilder $out) {
+        $this->readExpensesAsCategories($in);
+        $this->readServicesAsCategories($in);
+
+        $id_start = FuelioBackupBuilder::SAFE_CATEGORY_ID;
+        foreach ($this->expenses as $expense) {
+            $expense->setTypeId($expense->getTypeId() + $id_start);
+            $out->writeCostCategory($expense);
+        }
+        $id_start += count($this->expenses);
+        foreach ($this->services as $service) {
+            $service->setTypeId($service->getTypeId() + $id_start);
+            $out->writeCostCategory($service);
+        }
+    }
+
+    protected function processExpense(\SimpleXMLElement $expense, FuelioBackupBuilder $out) {
+        $cost = new Cost();
+        $cost->setDate($this->readDate($expense->date));
+        $cost->setCost((string) $expense->{'total-cost'});
+        $cost->setOdo((string) $expense->{'odometer-reading'});
+        if ($expense->expenses && $expense->expenses->expense[0]) {
+            $atts = $expense->expenses->expense[0]->attributes();
+            $id = (string) $atts['id'];
+            if (isset($this->expenses[$id])) {
+                $cost->setCostCategoryId($this->expenses[$id]->getTypeId());
+            }
+        }
+
+        $notes = (string) $expense->notes;
+        $notes .= ' ' . (string) $expense->{'expense-center-name'} . ' ' . (string) $expense->{'expense-center-address'};
+
+        // Build title, something short, like notes till first ','
+        $title = (string) $expense->notes;
+        if (strpos($title, ',') !== false) {
+            $title = substr($title, 0, strpos($title, ','));
+        }
+
+        $cost->setNotes(trim($notes));
+        $cost->setTitle($title);
+        $out->writeCost($cost);
+    }
+
+    protected function processService(\SimpleXMLElement $service, FuelioBackupBuilder $out) {
+        $cost = new Cost();
+        $cost->setDate($this->readDate($service->date));
+        $cost->setCost((string) $service->{'total-cost'});
+        $cost->setOdo((string) $service->{'odometer-reading'});
+        if ($service->services && $service->services->service[0]) {
+            $atts = $service->services->service[0]->attributes();
+            $id = (string) $atts['id'];
+            if (isset($this->services[$id])) {
+                $cost->setCostCategoryId($this->services[$id]->getTypeId());
+            }
+        }
+
+        $notes = (string) $service->notes;
+        $notes .= ' ' . (string) $service->{'expense-center-name'} . ' ' . (string) $service->{'expense-center-address'};
+
+        // Build title, something short, like notes till first ','
+        $title = (string) $service->notes;
+        if (strpos($title, ',') !== false) {
+            $title = substr($title, 0, strpos($title, ','));
+        }
+
+        $cost->setNotes(trim($notes));
+        $cost->setTitle($title);
+        $out->writeCost($cost);
+    }
+
+    protected function processCosts(SimpleXMLElement $data, ZipArchive $in, FuelioBackupBuilder $out) {
+        $out->writeCostCategoriesHeader();
+
+        $this->processCostCategories($in, $out);
+
+        $out->writeCoststHeader();
+
+        foreach ($data->{'expense-records'}->{'expense-record'} as $expense) {
+            $this->processExpense($expense, $out);
+        }
+
+        foreach ($data->{'service-records'}->{'service-record'} as $service) {
+            $this->processService($service, $out);
         }
     }
 

@@ -25,7 +25,7 @@ class FuelLogEntry implements IBackupEntry {
     }
 
     public function setOdo($iOdo) {
-        $this->odo = $iOdo;
+        $this->odo = intval($iOdo);
     }
 
     public function setFuel($dFuel) {

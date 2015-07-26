@@ -20,6 +20,8 @@ class Cost implements IBackupEntry
     
     public function setTitle($sTitle)
     {
+        if (empty($sTitle))
+            $sTitle = 'No title';
         $this->title = $sTitle;
     }
     
@@ -31,7 +33,7 @@ class Cost implements IBackupEntry
     
     public function setOdo($iOdo)
     {
-        $this->odo = $iOdo;
+        $this->odo = intval($iOdo);
     }
     
     public function setCostCategoryId($iId)

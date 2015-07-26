@@ -22,16 +22,16 @@ class MotostatProvider implements IConverter {
     public function __construct() {
         // keys are normalized categories names (see findCategory)
         $this->categories = array(
-            'purchase_price' => new CostCategory(51, 'Purchase price'),
-            'tech_inspection' => new CostCategory(52, 'Tech inspection'),
-            'miscellaneous' => new CostCategory(53, 'Miscellaneous'),
-            'repair' => new CostCategory(54, 'Repair'),
+            'purchase_price' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 1, 'Purchase price'),
+            'tech_inspection' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 2, 'Tech inspection'),
+            'miscellaneous' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 3, 'Miscellaneous'),
+            'repair' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 4, 'Repair'),
             'maintenance' => new CostCategory(2, 'Maintenance'),
-            'tires_change' => new CostCategory(55, 'Tires change'),
-            'care' => new CostCategory(56, 'Care'),
-            'spare_parts' => new CostCategory(57, 'Spare parts'),
-            'inspection' => new CostCategory(58, 'inspection'),
-            'oil_change' => new CostCategory(59, 'Oil change'),
+            'tires_change' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 5, 'Tires change'),
+            'care' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 6, 'Care'),
+            'spare_parts' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 7, 'Spare parts'),
+            'inspection' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 8, 'inspection'),
+            'oil_change' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 9, 'Oil change'),
             'insurance' => new CostCategory(31, 'Insurance')
         );
     }
