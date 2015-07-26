@@ -62,8 +62,8 @@ $provider = new FuelioImporter\ConverterProvider();
                 <input type="file" name="f" required="required"/>
                 <?php foreach ($provider as $converter) { ?>
                 <input type="radio" id="radio-<?= $converter->getName()?>" name="c" value="<?= $converter->getName() ?>" required="required"/> <label for="radio-<?= $converter->getName()?>"> <?= $converter->getTitle() ?></label>
-                <input type="submit" value="Process"/>
                 <?php } ?>
+                <input type="submit" value="Process"/>
             </fieldset>
         </form>
         <div class="mdl-layout mdl-js-layout mdl-layout--overlay-drawer-button">

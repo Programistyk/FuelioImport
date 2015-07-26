@@ -8,6 +8,7 @@ use FuelioImporter\CostCategory;
 use FuelioImporter\Cost;
 use FuelioImporter\FuelLogEntry;
 use FuelioImporter\InvalidFileFormatException;
+use FuelioImporter\Vehicle;
 use \SplFileObject;
 
 class MotostatProvider implements IConverter {
@@ -87,7 +88,7 @@ class MotostatProvider implements IConverter {
         }
 
         $out->writeVehicleHeader();
-        $out->writeVehicle($this->car_name, 'Motostat CSV conversion');
+        $out->writeVehicle(new Vehicle($this->car_name, 'Motostat CSV conversion'));
 
         // process fuel log and prepare cost_data
         $this->processFuelings($in, $out);

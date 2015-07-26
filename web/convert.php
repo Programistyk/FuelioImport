@@ -19,13 +19,20 @@ try {
     $converter->setCarName($_POST['n']);
     $fname = 'FuelioBackup-' . ucfirst(preg_replace('/\s+/', '-', $converter->getTitle())) . '.csv';
 
-//header('Content-Type: text/plain, charset=UTF-8');
-    header('Content-Type: text/csv, charset=UTF-8');
-    header('Content-Disposition: attachment; filename="' . $fname . '"');
+    if (defined('DEBUG'))
+        header('Content-Type: text/plain, charset=UTF-8');
+    else {
+        header('Content-Type: text/csv, charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $fname . '"');
+    }
     $outfile = $converter->processFile(new SplFileObject($file['tmp_name']));
     $outfile->rewind();
     $outfile->fpassthru();
 } catch (\Exception $ex) {
+    if (defined('DEBUG')) {
+        @header('Content-Type: text/html; charset=UTF-8'); // lets make reading xdebug output easier ;)
+        throw $ex;
+    }
     header('Content-Type: text/plain, charset=UTF-8', true, 500);
     die('An unknown error occured.');
 }
