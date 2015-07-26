@@ -1,6 +1,7 @@
 <?php
 
 namespace FuelioImporter;
+use SplFileObject;
 
 interface IConverter {
     // Internal name of converter (as in hashtags)
@@ -17,4 +18,6 @@ interface IConverter {
     public function getCard();
     // Optional stylesheet to include on page
     public function getStylesheetLocation();
+    // Sets car name
+    public function setCarName($name);
 }

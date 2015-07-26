@@ -3,7 +3,7 @@
 namespace FuelioImporter;
 
 use \IteratorAggregate;
-use DirectoryIterator;
+use \DirectoryIterator;
 
 class ConverterProvider implements IteratorAggregate {
 
@@ -16,6 +16,15 @@ class ConverterProvider implements IteratorAggregate {
             $this->initialize();
 
         return new \ArrayIterator($this->providers);
+    }
+    
+    public function get($name)
+    {
+        if (!$this->classes_loaded)
+            $this->initialize();
+        if (isset($this->providers[$name]))
+            return $this->providers[$name];
+        throw new \FuelioImporter\ProviderNotExistsException();
     }
 
     /**
@@ -41,7 +50,11 @@ class ConverterProvider implements IteratorAggregate {
                 
                 if (in_array('FuelioImporter\\IConverter', class_implements($classname, true)))
                 {
-                    $this->providers[] = new $classname();
+                    $instance = new $classname();
+                    if (isset($this->providers[$instance->getName()]))
+                        throw new \FuelioImporter\ProviderExistsException();
+                    
+                    $this->providers[$instance->getName()] = $instance;
                 }
             }
         }

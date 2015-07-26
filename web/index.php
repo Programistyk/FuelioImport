@@ -34,7 +34,7 @@ $provider = new FuelioImporter\ConverterProvider();
         foreach ($provider as $converter) {
             if (!empty($converter->getStylesheetLocation())) {
                 ?>
-        <link rel="stylesheet" href="<?= $converter->getStylesheetLocation() ?>">
+                <link rel="stylesheet" href="<?= $converter->getStylesheetLocation() ?>">
                 <?php
             }
         }
@@ -56,6 +56,16 @@ $provider = new FuelioImporter\ConverterProvider();
     </head>
 
     <body>
+        <form action="convert.php" method="post" enctype="multipart/form-data">
+            <fieldset>
+                <input type="text" name="n" required="required" placeholder="Car name"/>
+                <input type="file" name="f" required="required"/>
+                <?php foreach ($provider as $converter) { ?>
+                <input type="radio" id="radio-<?= $converter->getName()?>" name="c" value="<?= $converter->getName() ?>" required="required"/> <label for="radio-<?= $converter->getName()?>"> <?= $converter->getTitle() ?></label>
+                <input type="submit" value="Process"/>
+                <?php } ?>
+            </fieldset>
+        </form>
         <div class="mdl-layout mdl-js-layout mdl-layout--overlay-drawer-button">
             <header class="mdl-layout__header mdl-layout__header--scroll">
                 <div class="mdl-layout__header-row">
@@ -73,15 +83,17 @@ $provider = new FuelioImporter\ConverterProvider();
             <div class="mdl-layout__drawer">
                 <span class="mdl-layout-title">Converter</span>
                 <nav class="mdl-navigation">
-                    <a class="mdl-navigation__link" href="https://github.com/Programistyk/FuelioImport">GitHub</a>
-                    <a class="mdl-navigation__link" href="http://www.programistyk.pl">Programistyk</a>
                     <?php
                     foreach ($provider as $converter) {
                         ?>
-                        <a class="mdl-navigation__link" href="#<?= $converter->getName() ?>"><?= $converter->getTitle() ?>
+                        <a class="mdl-navigation__link" href="#prov-<?= $converter->getName() ?>"><?= $converter->getTitle() ?>
                             <?php
                         }
                         ?>
+                </nav>
+                <nav class="mdl-navigation"
+                     <a class="mdl-navigation__link" href="https://github.com/Programistyk/FuelioImport">GitHub</a>
+                    <a class="mdl-navigation__link" href="http://www.programistyk.pl">Programistyk</a>
                 </nav>
             </div>
             <main class="mdl-layout__content">
@@ -98,6 +110,7 @@ $provider = new FuelioImporter\ConverterProvider();
                             <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
                                 Get Started
                             </a>
+
                         </div>
                         <div class="mdl-card__menu">
                             <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
@@ -110,33 +123,37 @@ $provider = new FuelioImporter\ConverterProvider();
                     foreach ($provider as $converter) {
                         $card = $converter->getCard();
                         ?>
-                        <div class="mdl-card mdl-shadow--2dp <?= $card->getClass() ?>">
+                        <div class="mdl-card mdl-shadow--2dp <?= $card->getClass() ?>" id="prov-<?= $converter->getName() ?>">
                             <div class="mdl-card__title">
                                 <h2 class="mdl-card__title-text"><?= $card->getTitle() ?></h2>
                             </div>
                             <div class="mdl-card__supporting-text">
                                 <?= $card->getSupporting() ?>
                             </div>
-                            <div class="mdl-card__actions mdl-card--border">
-                                <?php foreach ($card->getActions() as $action) { ?>
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
-                                        Get Started
-                                    </a>
-                                <?php } ?>
-                            </div>
-                            <div class="mdl-card__menu">
-                                <?php foreach ($card->getMenu() as $menu) { ?>
-                                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
-                                        <i class="material-icons">share</i>
-                                    </button>
-                                <?php } ?>
-                            </div>
+                            <?php if (!empty($card->getActions())) { ?>
+                                <div class="mdl-card__actions mdl-card--border">
+                                    <?php foreach ($card->getActions() as $action) { ?>
+                                        <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="<?= $action[2] ?>">
+                                            <?= $action[0] ?>
+                                        </a>
+                                    <?php } ?>
+                                </div>
+                            <?php } ?>
+                            <?php if (!empty($card->getMenu())) { ?>
+                                <div class="mdl-card__menu">
+                                    <?php foreach ($card->getMenu() as $menu) { ?>
+                                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                                            <i class="material-icons">share</i>
+                                        </button>
+                                    <?php } ?>
+                                </div>
+                            <?php } ?>
                         </div>
                     <?php } ?>
                 </div>
             </main>
         </div>
-
+        <?php @include '../view/analytics.html' ?>
     </body>
 </body>
 </html>
