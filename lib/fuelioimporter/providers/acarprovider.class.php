@@ -128,14 +128,14 @@ class AcarProvider implements IConverter {
         $out->writeVehicleHeader();
         $vehicle = new Vehicle($this->car_name, '');
 
-        $vehicle->setName($data->name);
+        $vehicle->setName((string)$data->name);
         $vehicle->setDescription((string) $data->notes);
-        $vehicle->setMake($data->make);
-        $vehicle->setModel($data->model);
-        $vehicle->setYear($data->year);
-        $vehicle->setPlate($data->{'license-plate'});
-        $vehicle->setVIN($data->vin);
-        $vehicle->setInsurance($data->{'insurance-policy'});
+        $vehicle->setMake((string)$data->make);
+        $vehicle->setModel((string)$data->model);
+        $vehicle->setYear((string)$data->year);
+        $vehicle->setPlate((string)$data->{'license-plate'});
+        $vehicle->setVIN((string)$data->vin);
+        $vehicle->setInsurance((string)$data->{'insurance-policy'});
         $vehicle->setFuelUnit($this->getFuelUnit());
         $vehicle->setDistanceUnit($this->getDistanceUnit());
         $vehicle->setConsumptionUnit($this->getConsumptionUnit());
@@ -216,9 +216,10 @@ class AcarProvider implements IConverter {
             $entry->setFuel((string) $record->volume);
             $entry->setPrice((string) $record->{'total-cost'});
             $entry->setOdo((string) $record->{'odometer-reading'});
-            // We need to calculate fuel consumption to fuelios format
-            $consumption = (string) $record->{'fuel-efficiency'};
-            $entry->setConsumption($this->calculateConsumption($consumption, $this->getConsumptionUnit()));
+            // According to Adrian Gajda this is done by app itself during import
+            //$consumption = (string) $record->{'fuel-efficiency'};
+            //$entry->setConsumption($this->calculateConsumption($consumption, $this->getConsumptionUnit()));
+            
             $entry->setGeoCoords((string) $record->latitude, (string) $record->longitude);
             $entry->setFullFillup((string) $record->partial != 'true');
             $entry->setMissedEntries((string) $record->{'previous-missed-fillups'} == 'true');

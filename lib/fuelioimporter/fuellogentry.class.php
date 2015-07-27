@@ -48,6 +48,12 @@ class FuelLogEntry implements IBackupEntry {
     public function setGeoCoords($dLatitude, $dLongitude) {
         $this->latitude = $dLatitude;
         $this->longitude = $dLongitude;
+        
+        // Fuelio requires city name to display geo data on map
+        if (empty($this->city))
+        {
+            $this->setCity('GPS');
+        }
     }
 
     public function setCity($sCity) {
