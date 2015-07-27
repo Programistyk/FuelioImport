@@ -11,15 +11,15 @@ Supported formats are:
  * aCar full backup (.abp) (with geolocation!)
 
 ## Limitations
-Current versions of Fuelio app keeps cost categories car-independent. If you have entered non-standard categories, Fuelio will assign imported costs to them,
+Current versions of Fuelio app keep cost categories car-independent. If you have entered non-standard categories, Fuelio will assign imported costs to them,
 leaving cost categories defined in our export. Because of this, there is no guarantee that your categories will be kept and we suggest to convert only data
 for completely new installation of the app.
 
-Fuelio's file format supports only one car definition in file, so if you convert backup containing more cars (like aCar), only first car is going to be imported.
+Fuelio's file format supports only one car definition in file, so if you convert backup containing more cars (like aCar's), only first car is going to be imported.
 
 aCar format support only Litres as Fuel Unit and l/100km as Consumption Unit.
 
 ## Requirements
-FuelioImport converter requires a decent PHP version, but anything 5.1+ should do the job.
+FuelioImport converter is built for current PHP version, but anything 5.1+ should do the job.
 
  * For aCar backup we need SimpleXMLElement and Zip support

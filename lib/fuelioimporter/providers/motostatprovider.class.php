@@ -66,9 +66,11 @@ class MotostatProvider implements IConverter {
         return null;
     }
 
-    public function processFile(\SplFileObject $stream) {
+    public function processFile(\SplFileObject $in) {
         $out = new FuelioBackupBuilder();
-        $in = &$stream;
+        if (!$in->isReadable() || !$in->isFile())
+            throw new InvalidFileFormatException();
+        
         $in->setFlags(SplFileObject::SKIP_EMPTY | SplFileObject::DROP_NEW_LINE);
 
         // Verify file header
@@ -112,7 +114,7 @@ class MotostatProvider implements IConverter {
             }
             if (empty($log[1]))
                 continue; // no fueling_id
-            
+
             $entry = new FuelLogEntry();
             $entry->setDate($log[3]);
             $entry->setOdo($log[6]);
@@ -176,9 +178,9 @@ class MotostatProvider implements IConverter {
         return $category;
     }
 
-    protected function cleanup()
-    {
+    protected function cleanup() {
         $this->costs = array();
         $this->categories = array();
     }
+
 }
