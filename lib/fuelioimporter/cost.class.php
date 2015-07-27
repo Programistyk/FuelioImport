@@ -53,12 +53,12 @@ class Cost implements IBackupEntry
     
     public function setFlag($flag)
     {
-        $this->flag = $flag; // TODO: What is "flag"? 
+        $this->flag = $flag; // @TODO: What is "flag"? 
     }
     
     public function setIdR($iId)
     {
-        $this->idR = $iId; // TODO: What is Id R? Isn't it "internal"
+        $this->idR = $iId; // @TODO: What is Id R? Isn't it "internal"
     }
     
     public function setRead($bRead)

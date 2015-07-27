@@ -2,7 +2,14 @@
 
 namespace FuelioImporter;
 
+/**
+ * Interface for generic Fuelio file entries
+ * @author Kamil Kamiński
+ */
 interface IBackupEntry {
-    // Returns fputcsv array
+    /**
+     * Returns array for fputcsv
+     * @return array
+     */
     public function getData();
 }

@@ -4,38 +4,82 @@ namespace FuelioImporter;
 
 use FuelioImporter\IBackupEntry;
 
+/**
+ * Fuelio Vehicle data
+ * @author Kamil Kamiński
+ * @version 20150727
+ */
 class Vehicle implements IBackupEntry {
 
-    // Distance units
+    /** Distance unit */
     const KILOMETERS = 0;
+    /** Distance unit */
     const MILES = 1;
     
-    // Fuel units
+    /** Fuel unit */
     const LITRES = 0;
+    /** Fuel unit */
     const GALLONS_US = 1;
+    /** Fuel unit */
     const GALLONS_UK = 2;
     
-    // Consumption units
+    /** Consumption unit: l/100km */
     const L_PER_100KM = 0;
+    /** Consumption unit: mpg (us) */
     const MPG_US = 1;
+    /** Consumption unit: mpg (imp) */
     const MPG_UK = 2;
+    /** Consumption unit: km/l */
     const KM_PER_L = 3;
+    /** Consumption unit: km/gal (imp) */
     const KM_PER_GAL_US = 4;
+    /** Consumption unit: km/gal (us) */
     const KM_PER_GAL_UK = 5;
 
+    /** @var string Car name */
     protected $name;
+    
+    /** @var string Car description */
     protected $description;
+    
+    /** @var integer Distance unit */
     protected $distance_unit;
+    
+    /** @var integer Fuel unit */
     protected $fuel_unit;
+    
+    /** @var integer Consuption unit */
     protected $consumption_unit;
+    
+    /** @var string CSV date format, constant */
     protected $csv_date_format = 'dd.MM.yyyy';
+    
+    /** @var string Vehicle Identification Number */
     protected $vin;
+    
+    /** @var string Insurance policy number */
     protected $insurance;
+    
+    /** @var string Plate number */
     protected $plate;
+    
+    /** @var string Vehicle make */
     protected $make;
+    
+    /** @var string Vehicle model */
     protected $model;
+    
+    /** @var string Vehicle production year */
     protected $year;
 
+    /**
+     * Default constructor
+     * @param string $sName Car name
+     * @param string $sDescription Car description
+     * @param integer $iDistance_unit Distance unit constant
+     * @param integer $iFuel_unit Fuel unit constant
+     * @param integer $iConsumption_unit Consuption unit constant
+     */
     public function __construct($sName, $sDescription, $iDistance_unit = Vehicle::KILOMETERS, $iFuel_unit = Vehicle::LITRES, $iConsumption_unit = Vehicle::L_PER_100KM) {
         $this->setName($sName);
         $this->setDescription($sDescription);

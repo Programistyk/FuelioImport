@@ -190,7 +190,7 @@ class AcarProvider implements IConverter {
      * @throws \FuelioImporter\InvalidUnitException On unsupported unit
      */
     protected function getFuelUnit() {
-        // TODO: How does aCar mark US / UK gallons?
+        // @TODO: How does aCar mark US / UK gallons?
         switch ($this->preferences['acar.volume-unit']) {
             case 'L':
                 return Vehicle::LITRES;
@@ -222,7 +222,7 @@ class AcarProvider implements IConverter {
      * @throws \FuelioImporter\InvalidUnitException
      */
     protected function getConsumptionUnit() {
-        // TODO: check the format behind other options:
+        // @TODO: check the format behind other options:
         // mpg (us), mpg (imperial), gal/100mi (us), gal/100mi (imperial), km/L, km/gal (us), km/gal (imperial). mi/L
         switch ($this->preferences['acar.fuel-efficiency-unit']) {
 

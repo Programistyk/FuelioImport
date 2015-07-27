@@ -1,23 +1,59 @@
 <?php
 
 namespace FuelioImporter;
-use SplFileObject;
+use \SplFileObject;
 
+/**
+ * Interface for converters
+ * @author Kamil Kamiński
+ */
 interface IConverter {
-    // Internal name of converter (as in hashtags)
+    /**
+     * Internal name of converter (as in hashtags)
+     * @return string
+     */
     public function getName();
-    // Full name of converter
+    
+    /**
+     * Full name of converter
+     * @return string
+     */
     public function getTitle();
-    // Array of errors during conversion
+    
+    /**
+     * Array of errors during conversion
+     * @return array
+     */
     public function getErrors();
-    // Array of warnings
+    
+    /**
+     * Array of warnings
+     * @return array()
+     */
     public function getWarnings();
-    // Method that processes given file returning SplTempFileObject
+    
+    /**
+     * Method that processes given file returning SplTempFileObject
+     * @return FuelioImporter\FuelioBackupBuilder
+     */
     public function processFile(SplFileObject $stream);
-    // Method returns a CardInterface for visual representation
+    
+    /**
+     * Method returns a CardInterface for visual representation
+     * @return ICard
+     */
     public function getCard();
-    // Optional stylesheet to include on page
+    
+    /**
+     * Optional stylesheet to include on page
+     * @return string|null
+     */
     public function getStylesheetLocation();
-    // Sets car name
+    
+    /**
+     * Sets car name
+     * 
+     * @param string $name Car name
+     */
     public function setCarName($name);
 }
