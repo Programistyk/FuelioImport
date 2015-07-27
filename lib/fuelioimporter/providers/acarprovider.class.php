@@ -2,44 +2,55 @@
 
 namespace FuelioImporter\Providers;
 
-use \ZipArchive;
-use \SplFileObject;
 use FuelioImporter\IConverter;
 use FuelioImporter\FuelioBackupBuilder;
 use FuelioImporter\Vehicle;
 use FuelioImporter\FuelLogEntry;
 use FuelioImporter\CostCategory;
 use FuelioImporter\Cost;
+use \ZipArchive;
+use \SplFileObject;
 use \SimpleXMLElement;
 use \DateTime;
 
 class AcarProvider implements IConverter {
 
-    protected $car_name = 'Acar import';
-    protected $archive_files;
+    // Car name
+    protected $car_name = 'aCar import';
+    // List of files in zip archive
+    protected $archive_files = array();
+    // metadata.inf file contents as array
     protected $metadata = array();
+    // preferences.xml file contents as array
     protected $preferences = array();
+    // List of expenses from expenses.xml (as CostCategory instances)
     protected $expenses = array();
+    // List of services from services.xml (as CostCategory instances)
     protected $services = array();
 
+    // @see IConverter
     public function getName() {
         return 'acar';
     }
 
+    // @see IConverter
     public function getTitle() {
         return 'aCar ABP';
     }
 
+    // @see IConverter
     public function getStylesheetLocation() {
         return null;
     }
 
+    // @see IConverter
     public function setCarName($name) {
         if (!empty($name)) {
             $this->car_name = $name;
         }
     }
 
+    // @see IConverter
     public function processFile(SplFileObject $stream) {
         // We need to verify that we've got valid archive
 
@@ -76,18 +87,26 @@ class AcarProvider implements IConverter {
         return $out;
     }
 
+    // @see IConverter
     public function getErrors() {
         return array();
     }
 
+    // @see IConverter
     public function getWarnings() {
         return array();
     }
 
+    // @see IConverter
     public function getCard() {
         return new AcarCard();
     }
 
+    /**
+     * Reads preferences.xml into array
+     * @param ZipArchive $in Input archive
+     * @param FuelioBackupBuilder $out Output file
+     */
     protected function readPreferences(ZipArchive $in, FuelioBackupBuilder $out) {
         // Read all preferences and store them as array
         $xml = new \SimpleXMLElement(stream_get_contents($in->getStream('preferences.xml')));
@@ -104,11 +123,14 @@ class AcarProvider implements IConverter {
             $this->preferences[$key] = $value;
         }
     }
-
-    protected function validateInputFile(ZipArchive $in, FuelioBackupBuilder $out) {
-        if (!isset($this->archive_files['metadata.inf']))
-            throw new \FuelioImporter\InvalidFileFormatException();
-
+    
+    /**
+     * Reads metadata.inf into $metadata array
+     * @param ZipArchive $in Input archive
+     * @throws \FuelioImporter\InvalidFileFormatException When no metadata.inf in archive
+     */
+    protected function readMetadata(ZipArchive $in)
+    {
         $metastream = $in->getStream('metadata.inf');
         if (false === $metastream)
             throw new \FuelioImporter\InvalidFileFormatException();
@@ -118,12 +140,31 @@ class AcarProvider implements IConverter {
             if (count($entry) == 2)
                 $this->metadata[trim($entry[0])] = trim($entry[1]);
         }
+    }
+
+    /**
+     * Throws error if provided file is not Full Backup of aCar data
+     * @param ZipArchive $in Input archive
+     * @param FuelioBackupBuilder $out Output file
+     * @throws \FuelioImporter\InvalidFileFormatException
+     */
+    protected function validateInputFile(ZipArchive $in, FuelioBackupBuilder $out) {
+        if (!isset($this->archive_files['metadata.inf']))
+            throw new \FuelioImporter\InvalidFileFormatException();
+
+        $this->readMetadata($in);
 
         // At this moment we support only full backups
         if (@$this->metadata['acar.backup.type'] != 'Full-Backup')
             throw new \FuelioImporter\InvalidFileFormatException('At this moment we support only Full Backups!');
     }
 
+    /**
+     * Reads vehicle node of vehicles.xml and stores Vehicle
+     * @param SimpleXMLElement $data vehicle node
+     * @param ZipArchive $in Input archive
+     * @param FuelioBackupBuilder $out Output file
+     */
     public function processVehicle(SimpleXMLElement $data, ZipArchive $in, FuelioBackupBuilder $out) {
         $out->writeVehicleHeader();
         $vehicle = new Vehicle($this->car_name, '');
@@ -143,15 +184,26 @@ class AcarProvider implements IConverter {
         $out->writeVehicle($vehicle);
     }
 
+    /**
+     * Reads fuel unit from aCars preferences
+     * @return integer Vehicle constant
+     * @throws \FuelioImporter\InvalidUnitException On unsupported unit
+     */
     protected function getFuelUnit() {
         // TODO: How does aCar mark US / UK gallons?
         switch ($this->preferences['acar.volume-unit']) {
             case 'L':
-            default:
                 return Vehicle::LITRES;
+            default:
+                throw new \FuelioImporter\InvalidUnitException();
         }
     }
 
+    /**
+     * Reads distance unit from aCars preferences
+     * @return integer Vehicle constant
+     * @throws \FuelioImporter\InvalidUnitException
+     */
     protected function getDistanceUnit() {
         switch ($this->preferences['acar.distance-unit']) {
             case 'm':
@@ -164,6 +216,11 @@ class AcarProvider implements IConverter {
         }
     }
 
+    /**
+     * Reads consumption unit from aCars preferences
+     * @return integer Vehicle constant
+     * @throws \FuelioImporter\InvalidUnitException
+     */
     protected function getConsumptionUnit() {
         // TODO: check the format behind other options:
         // mpg (us), mpg (imperial), gal/100mi (us), gal/100mi (imperial), km/L, km/gal (us), km/gal (imperial). mi/L
@@ -206,6 +263,12 @@ class AcarProvider implements IConverter {
         return $dt->format(DateTime::ATOM);
     }
 
+    /**
+     * Converts fillups from aCar to Fuelio format
+     * @param SimpleXMLElement $data Vehicle node
+     * @param ZipArchive $in Input archive
+     * @param FuelioBackupBuilder $out Output file
+     */
     protected function processFuellings(SimpleXMLElement $data, ZipArchive $in, FuelioBackupBuilder $out) {
         $out->writeFuelLogHeader();
 
@@ -216,9 +279,10 @@ class AcarProvider implements IConverter {
             $entry->setFuel((string) $record->volume);
             $entry->setPrice((string) $record->{'total-cost'});
             $entry->setOdo((string) $record->{'odometer-reading'});
-            // According to Adrian Gajda this is done by app itself during import
-            //$consumption = (string) $record->{'fuel-efficiency'};
-            //$entry->setConsumption($this->calculateConsumption($consumption, $this->getConsumptionUnit()));
+            // According to Adrian Kajda consumption is calculated by app itself
+            // and we should not store it
+            // $consumption = (string) $record->{'fuel-efficiency'};
+            // $entry->setConsumption($this->calculateConsumption($consumption, $this->getConsumptionUnit()));
             
             $entry->setGeoCoords((string) $record->latitude, (string) $record->longitude);
             $entry->setFullFillup((string) $record->partial != 'true');
@@ -237,7 +301,7 @@ class AcarProvider implements IConverter {
      * @return float Fuel consumption at L/100km
      * @throws \FuelioImporter\InvalidUnitException
      */
-    protected function calculateConsumption($consumption, $iFormat) {
+    /*protected function calculateConsumption($consumption, $iFormat) {
         $dConsumption = floatval(str_replace(',', '.', $consumption));
         switch ($iFormat) {
             case Vehicle::MPG_US:
@@ -260,8 +324,12 @@ class AcarProvider implements IConverter {
         }
 
         return $rate / $dConsumption;
-    }
+    }*/
 
+    /**
+     * Reads services.xml and stores them as CostCategory
+     * @param ZipArchive $in Input archive
+     */
     protected function readServicesAsCategories(ZipArchive $in) {
         $xml = new \SimpleXMLElement(stream_get_contents($in->getStream('services.xml')));
         foreach ($xml->service as $service) {
@@ -272,6 +340,10 @@ class AcarProvider implements IConverter {
         }
     }
 
+    /**
+     * Reads expenses.xml and stores them as CostCategory
+     * @param ZipArchive $in Input archive
+     */
     protected function readExpensesAsCategories(ZipArchive $in) {
         $xml = new \SimpleXMLElement(stream_get_contents($in->getStream('expenses.xml')));
         foreach ($xml->expense as $expense) {
@@ -282,6 +354,11 @@ class AcarProvider implements IConverter {
         }
     }
 
+    /**
+     * Builds list of cost categories for Fuelio
+     * @param ZipArchive $in Input archive
+     * @param FuelioBackupBuilder $out Output file
+     */
     protected function processCostCategories(ZipArchive $in, FuelioBackupBuilder $out) {
         $this->readExpensesAsCategories($in);
         $this->readServicesAsCategories($in);
@@ -298,7 +375,12 @@ class AcarProvider implements IConverter {
         }
     }
 
-    protected function processExpense(\SimpleXMLElement $expense, FuelioBackupBuilder $out) {
+    /**
+     * Reads XML node of a single expense (vehicles.xml)
+     * @param SimpleXMLElement $expense
+     * @param FuelioBackupBuilder $out
+     */
+    protected function processExpense(SimpleXMLElement $expense, FuelioBackupBuilder $out) {
         $cost = new Cost();
         $cost->setDate($this->readDate($expense->date));
         $cost->setCost((string) $expense->{'total-cost'});
@@ -314,7 +396,7 @@ class AcarProvider implements IConverter {
         $notes = (string) $expense->notes;
         $notes .= ' ' . (string) $expense->{'expense-center-name'} . ' ' . (string) $expense->{'expense-center-address'};
 
-        // Build title, something short, like notes till first ','
+        // Build title, something short, let's take notes till first ','
         $title = (string) $expense->notes;
         if (strpos($title, ',') !== false) {
             $title = substr($title, 0, strpos($title, ','));
@@ -325,7 +407,12 @@ class AcarProvider implements IConverter {
         $out->writeCost($cost);
     }
 
-    protected function processService(\SimpleXMLElement $service, FuelioBackupBuilder $out) {
+    /**
+     * Reads XML node of a single service (vehicles.xml)
+     * @param SimpleXMLElement $service
+     * @param FuelioBackupBuilder $out
+     */
+    protected function processService(SimpleXMLElement $service, FuelioBackupBuilder $out) {
         $cost = new Cost();
         $cost->setDate($this->readDate($service->date));
         $cost->setCost((string) $service->{'total-cost'});
@@ -341,7 +428,7 @@ class AcarProvider implements IConverter {
         $notes = (string) $service->notes;
         $notes .= ' ' . (string) $service->{'expense-center-name'} . ' ' . (string) $service->{'expense-center-address'};
 
-        // Build title, something short, like notes till first ','
+        // Build title, something short, let's take notes till first ','
         $title = (string) $service->notes;
         if (strpos($title, ',') !== false) {
             $title = substr($title, 0, strpos($title, ','));
@@ -352,6 +439,12 @@ class AcarProvider implements IConverter {
         $out->writeCost($cost);
     }
 
+    /**
+     * Converts expenses and services to Fuelio's costs
+     * @param SimpleXMLElement $data Vehicle node
+     * @param ZipArchive $in Input archive
+     * @param FuelioBackupBuilder $out Output file
+     */
     protected function processCosts(SimpleXMLElement $data, ZipArchive $in, FuelioBackupBuilder $out) {
         $out->writeCostCategoriesHeader();
 
