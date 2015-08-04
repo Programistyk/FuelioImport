@@ -193,7 +193,7 @@ $provider = new FuelioImporter\ConverterProvider();
 
             var drop = function (e) {
                 e.preventDefault();
-                console.log(this, e);
+                $(this).removeClass("dropactive");
                 return false;
             }
 
