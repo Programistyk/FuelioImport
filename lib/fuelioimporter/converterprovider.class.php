@@ -5,12 +5,23 @@ namespace FuelioImporter;
 use \IteratorAggregate;
 use \DirectoryIterator;
 
+/**
+ * Converters provider
+ * 
+ * Provides interface for converting plugins detection and loading
+ * @author Kamil Kamiński
+ */
 class ConverterProvider implements IteratorAggregate {
 
-    private $providers = array();
-    private $classes_loaded = false;
+    /** @var array Internal storage of found providers */
+    protected $providers = array();
+    /** @var boolean Flag for autodetecting available plugins */
+    protected $classes_loaded = false;
 
-    // Interface impltementation
+    /**
+     * Interface implementation for iterating over available plugins
+     * @return \ArrayIterator
+     */
     public function getIterator() {
         if (!$this->classes_loaded)
             $this->initialize();
@@ -18,6 +29,12 @@ class ConverterProvider implements IteratorAggregate {
         return new \ArrayIterator($this->providers);
     }
     
+    /**
+     * Returns converter by its name
+     * @param string $name Converter name
+     * @return \FuelioImporter\IConverter
+     * @throws \FuelioImporter\ProviderNotExistsException
+     */
     public function get($name)
     {
         if (!$this->classes_loaded)
@@ -34,7 +51,7 @@ class ConverterProvider implements IteratorAggregate {
      * classes implementing IConverter interface
      */
     public function initialize() {
-        $di = new \DirectoryIterator(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'providers');
+        $di = new DirectoryIterator(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'providers');
         foreach ($di as $spl_file) {
             if ($spl_file->isFile() && !$spl_file->isDot() && $spl_file->isReadable() && stripos($spl_file->getBasename(), 'provider.class.php') !== false) {
                 
