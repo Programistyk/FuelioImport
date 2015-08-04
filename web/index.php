@@ -27,7 +27,7 @@ $provider = new FuelioImporter\ConverterProvider();
         <meta name="msapplication-TileColor" content="#3372DF">
 
         <link href='//fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en' rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-pink.min.css">
+        <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.2/material.blue_grey-amber.min.css" />
         <script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <?php
@@ -41,27 +41,34 @@ $provider = new FuelioImporter\ConverterProvider();
         ?>
 
         <style>
-            .demo-card-wide.mdl-card {
-                width: 512px;
+            body {background:#F5F5F5;}
+            .ghost {
+                display:none;
             }
             .demo-card-wide > .mdl-card__title {
                 color: #fff;
                 height: 176px;
-                background: url('../assets/demos/welcome_card.jpg') center / cover;
+                /* source: http://mrg.bz/3dzwgF */
+                background: url('card_background.jpg') center / cover;
             }
             .demo-card-wide > .mdl-card__menu {
                 color: #fff;
+            }
+            .dropactive {
+                background-color: #F9F9F9;
+                outline: dashed 2px gray;
+                outline-offset: 8px;
             }
         </style>
     </head>
 
     <body>
-        <form action="convert.php" method="post" enctype="multipart/form-data">
+        <form action="convert.php" method="post" enctype="multipart/form-data" class="ghost">
             <fieldset>
                 <input type="text" name="n" required="required" placeholder="Car name"/>
                 <input type="file" name="f" required="required"/>
                 <?php foreach ($provider as $converter) { ?>
-                <input type="radio" id="radio-<?= $converter->getName()?>" name="c" value="<?= $converter->getName() ?>" required="required"/> <label for="radio-<?= $converter->getName()?>"> <?= $converter->getTitle() ?></label>
+                    <input type="radio" id="radio-<?= $converter->getName() ?>" name="c" value="<?= $converter->getName() ?>" required="required"/> <label for="radio-<?= $converter->getName() ?>"> <?= $converter->getTitle() ?></label>
                 <?php } ?>
                 <input type="submit" value="Process"/>
             </fieldset>
@@ -97,33 +104,39 @@ $provider = new FuelioImporter\ConverterProvider();
                 </nav>
             </div>
             <main class="mdl-layout__content">
-                <div class="page-content">
-                    <div class="mdl-card mdl-shadow--2dp demo-card-wide">
+                <div class="page-content mdl-grid">
+                    <div class="mdl-cell mdl-cell--2-col"></div>
+                    <div class="mdl-card mdl-shadow--2dp demo-card-wide mdl-cell mdl-cell--8-col">
                         <div class="mdl-card__title">
                             <h2 class="mdl-card__title-text">Welcome</h2>
                         </div>
                         <div class="mdl-card__supporting-text">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                            Mauris sagittis pellentesque lacus eleifend lacinia...
+                            Welcome to Fuelio Import Converter, an unofficial tool to ease data migration process. Drop your file to proper card to begin.
                         </div>
                         <div class="mdl-card__actions mdl-card--border">
-                            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+                            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="https://github.com/Programistyk/FuelioImport/wiki/Getting-started">
                                 Get Started
                             </a>
 
                         </div>
                         <div class="mdl-card__menu">
-                            <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
-                                <i class="material-icons">share</i>
-                            </button>
+                            <!--                            <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                                                            <i class="material-icons">share</i>
+                                                        </button>-->
                         </div>
                     </div>
+                </div>
+
+                <!-- Google ads placeholder -->
+
+                <div class="page-content mdl-grid" id="converters">
+                    <div class="mdl-cell mdl-cell--1-col"></div>
 
                     <?php
                     foreach ($provider as $converter) {
                         $card = $converter->getCard();
                         ?>
-                        <div class="mdl-card mdl-shadow--2dp <?= $card->getClass() ?>" id="prov-<?= $converter->getName() ?>">
+                        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col <?= $card->getClass() ?>" id="prov-<?= $converter->getName() ?>">
                             <div class="mdl-card__title">
                                 <h2 class="mdl-card__title-text"><?= $card->getTitle() ?></h2>
                             </div>
@@ -150,10 +163,50 @@ $provider = new FuelioImporter\ConverterProvider();
                             <?php } ?>
                         </div>
                     <?php } ?>
+
+                    <div class="mdl-cell mdl-cell--1-col"></div>
                 </div>
             </main>
         </div>
         <?php @include '../view/analytics.html' ?>
     </body>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        window.onload = function () {
+            var dragenter = function (e) {
+                e.preventDefault();
+                return false;
+            }
+
+            var dragleave = function (e) {
+                e.preventDefault();
+                $(this).removeClass("dropactive");
+                return false;
+            }
+
+            var dragover = function (e) {
+                e.preventDefault();
+                $(this).addClass("dropactive");
+                return false;
+            }
+
+            var drop = function (e) {
+                e.preventDefault();
+                console.log(this, e);
+                return false;
+            }
+
+            if (window.FileReader)
+            {
+                $("#converters").on({
+                    "dragenter": dragenter,
+                    "dragleave": dragleave,
+                    "dragover": dragover,
+                    "drop": drop
+                }, ".mdl-card");
+            }
+        }
+    </script>
 </body>
 </html>

@@ -20,7 +20,7 @@ class AcarCard implements ICard {
     public function getActions() {
         // @todo: One day maybe we will use a proper class
         return array(
-            array('Help', 'popup', 'acarhelp.html')
+            array('Help', 'popup', 'https://github.com/Programistyk/FuelioImport/wiki/Converters---aCar')
         );
     }
     
