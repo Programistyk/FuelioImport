@@ -59,6 +59,10 @@ $provider = new FuelioImporter\ConverterProvider();
                 outline: dashed 2px gray;
                 outline-offset: 8px;
             }
+
+            #converters > .mdl-card {
+                cursor:pointer;
+            }
         </style>
     </head>
 
@@ -66,11 +70,11 @@ $provider = new FuelioImporter\ConverterProvider();
         <form action="convert.php" method="post" enctype="multipart/form-data" class="ghost">
             <fieldset>
                 <input type="text" name="n" required="required" placeholder="Car name"/>
-                <input type="file" name="f" required="required"/>
+                <input type="file" name="f"/>
                 <?php foreach ($provider as $converter) { ?>
                     <input type="radio" id="radio-<?= $converter->getName() ?>" name="c" value="<?= $converter->getName() ?>" required="required"/> <label for="radio-<?= $converter->getName() ?>"> <?= $converter->getTitle() ?></label>
                 <?php } ?>
-                <input type="submit" value="Process"/>
+                    <textarea name="datastream" id="datastream"></textarea>
             </fieldset>
         </form>
         <div class="mdl-layout mdl-js-layout mdl-layout--overlay-drawer-button">
@@ -136,13 +140,14 @@ $provider = new FuelioImporter\ConverterProvider();
                     foreach ($provider as $converter) {
                         $card = $converter->getCard();
                         ?>
-                        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col <?= $card->getClass() ?>" id="prov-<?= $converter->getName() ?>">
+                        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col <?= $card->getClass() ?>" id="prov-<?= $converter->getName() ?>" data-name="<?= $converter->getName() ?>">
                             <div class="mdl-card__title">
                                 <h2 class="mdl-card__title-text"><?= $card->getTitle() ?></h2>
                             </div>
                             <div class="mdl-card__supporting-text">
                                 <?= $card->getSupporting() ?>
                             </div>
+
                             <?php if (!empty($card->getActions())) { ?>
                                 <div class="mdl-card__actions mdl-card--border">
                                     <?php foreach ($card->getActions() as $action) { ?>
@@ -174,26 +179,52 @@ $provider = new FuelioImporter\ConverterProvider();
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script>
         window.onload = function () {
+            var filereaderload = function()
+            {
+                $("#datastream").val(this.result);
+                $("form.ghost").submit();
+            };
+            
             var dragenter = function (e) {
                 e.preventDefault();
                 return false;
-            }
+            };
 
             var dragleave = function (e) {
                 e.preventDefault();
                 $(this).removeClass("dropactive");
                 return false;
-            }
+            };
 
             var dragover = function (e) {
                 e.preventDefault();
                 $(this).addClass("dropactive");
                 return false;
-            }
+            };
 
             var drop = function (e) {
                 e.preventDefault();
-                $(this).removeClass("dropactive");
+                $(this).removeClass("dropactive").addClass("working");
+                if (!FileReader)
+                    alert("FileReader interface is not available. Upgrade your browser or click this card to select file :)");
+                else {
+                    var fr = new FileReader();
+                    fr.onloadend = filereaderload;
+                    fr.readAsDataURL(e.originalEvent.dataTransfer.files[0]);
+                    $("form.ghost input[name=c]").val([$(this).data("name")]);
+                }
+                return false;
+            }
+
+            var click = function (e) {
+                // Prevent action menu items from triggering file selection dialog
+                var etgt = $(e.target);
+                if (etgt.is(".mdl-button") || etgt.parent().is(".mdl-button"))
+                    return;
+                e.preventDefault();
+                // Set form's "C" value
+                $("form.ghost input[name=c]").val([$(this).data("name")]);
+                $("form.ghost :file").click();
                 return false;
             }
 
@@ -203,8 +234,12 @@ $provider = new FuelioImporter\ConverterProvider();
                     "dragenter": dragenter,
                     "dragleave": dragleave,
                     "dragover": dragover,
-                    "drop": drop
-                }, ".mdl-card");
+                    "drop": drop,
+                    "click": click
+                }, ".mdl-card:not(.mdl-button)");
+                $("form.ghost :file").change(function () {
+                    $("form.ghost").submit();
+                });
             }
         }
     </script>

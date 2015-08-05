@@ -57,7 +57,9 @@ class AcarProvider implements IConverter {
         $in = new ZipArchive();
         $out = new FuelioBackupBuilder();
 
-        $in->open($stream->getPathname());
+        /** @todo: Provide more detailed Zip-related error handling */
+        if ($in->open($stream->getPathname()) !== true)
+            throw new \FuelioImporter\InvalidFileFormatException(); // For basics
 
         // If no metadata.inf, throw error
         // list contents

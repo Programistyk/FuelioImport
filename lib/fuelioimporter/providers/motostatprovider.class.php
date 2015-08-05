@@ -67,10 +67,11 @@ class MotostatProvider implements IConverter {
     }
 
     public function processFile(\SplFileObject $in) {
-        $out = new FuelioBackupBuilder();
-        if (!$in->isReadable() || !$in->isFile())
+        if (($in->isFile() && !$in->isReadable()) || $in->isDir())
             throw new InvalidFileFormatException();
-        
+
+        $out = new FuelioBackupBuilder();
+
         $in->setFlags(SplFileObject::SKIP_EMPTY | SplFileObject::DROP_NEW_LINE);
 
         // Verify file header

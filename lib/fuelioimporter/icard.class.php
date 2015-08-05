@@ -5,6 +5,7 @@ namespace FuelioImporter;
 /**
  * Converter card interface for plugin GUI part
  * @todo Decide if we use cards and if we want plugin-based GUI
+ * @todo Add file input accept= argument support 
  * @author Kamil Kamiński
  */
 interface ICard {
