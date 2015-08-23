@@ -115,18 +115,15 @@ $provider = new FuelioImporter\ConverterProvider();
                             <h2 class="mdl-card__title-text">Welcome</h2>
                         </div>
                         <div class="mdl-card__supporting-text">
-                            Welcome to Fuelio Import Converter, an unofficial tool to ease data migration process. Drop your file to proper card to begin.
+                            <p>Welcome to Fuelio Import Converter, an unofficial tool to ease data migration process.</p>
+                            <p>Every card below represents a backup-format converter. You can drop your backup file onto it, or use standard file-open dialog by clicking on chosen card.</p>
+                            <p>If you need more support, hit an error or want to join out team, please use button below to get into our Wiki.
                         </div>
                         <div class="mdl-card__actions mdl-card--border">
                             <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="https://github.com/Programistyk/FuelioImport/wiki/Getting-started">
                                 Get Started
                             </a>
 
-                        </div>
-                        <div class="mdl-card__menu">
-                            <!--                            <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
-                                                            <i class="material-icons">share</i>
-                                                        </button>-->
                         </div>
                     </div>
                 </div>

@@ -38,10 +38,6 @@ try {
     $outfile->fpassthru();
 } catch (Exception $ex) {
     header('Content-Disposition:', true);
-    if (defined('DEBUG')) {
-        @header('Content-Type: text/html; charset=UTF-8'); // lets make reading xdebug output easier ;)
-        throw $ex;
-    }
-    header('Content-Type: text/plain, charset=UTF-8', true, 500);
-    die('An unknown error occured.');
+    header('Content-Type: text/html, charset=UTF-8', true, 500);
+    include '../view/error_template.php';
 }

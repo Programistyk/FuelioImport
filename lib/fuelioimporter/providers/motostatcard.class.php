@@ -13,7 +13,10 @@ class MotostatCard implements ICard {
     }
     
     public function getActions() {
-        return null;
+        return array(
+            array('Motostat', 'popup', 'http://www.motostat.pl/member/vehicles'),
+            array('Help', 'popup', 'https://github.com/Programistyk/FuelioImport/wiki/Converters---Motostat')
+        );
     }
     
     public function getMenu() {
@@ -21,6 +24,6 @@ class MotostatCard implements ICard {
     }
     
     public function getSupporting() {
-        return 'You can import Motostat fueling data';
+        return '<p>You can upload your <span class="">motostat.csv</span> file here and we will convert it into Fuelio\'s CSV format. Just tap this card or drop file onto it.</p><p>To export your car data, open Motostat, select your car and click on "Export". Make sure to select both checkboxes!';
     }
 }
