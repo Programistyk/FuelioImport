@@ -2,7 +2,8 @@
 Data converter for importingo into great Fuelio app. Currently very limited (but working) GUI is available for PHP 5 built-int webserver.
 
 FuelioImport is developed from the need to move personal fillups history from Motostat and aCar, but it is designed to offer ease of extension for new formats.
-We are working to run this tool online, targeting the first release.
+
+You can check this tool at http://fuelio.programistyk.pl
 
 ## Supported formats
 Supported formats are:
