@@ -122,8 +122,8 @@ $provider = new FuelioImporter\ConverterProvider();
             </div>
             <main class="mdl-layout__content">
                 <div class="page-content mdl-grid">
-                    <div class="mdl-cell mdl-cell--2-col"></div>
-                    <div class="mdl-card mdl-shadow--2dp demo-card-wide mdl-cell mdl-cell--8-col">
+                    <div class="mdl-cell mdl-cell--2-col-desktop mdl-cell--1-col-tablet mdl-cell--1-col-phone"></div>
+                    <div class="mdl-cell mdl-cell--8-col-desktop mdl-cell--7-col-tablet mdl-cell--3-col-phone mdl-card mdl-shadow--2dp demo-card-wide">
                         <div class="mdl-card__title">
                             <h2 class="mdl-card__title-text">Welcome</h2>
                         </div>
@@ -150,7 +150,7 @@ $provider = new FuelioImporter\ConverterProvider();
                     foreach ($provider as $converter) {
                         $card = $converter->getCard();
                         ?>
-                        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col <?= $card->getClass() ?>" id="prov-<?= $converter->getName() ?>" data-name="<?= $converter->getName() ?>">
+                        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col-desktop mdl-cell--7-col-tablet mdl-cell--3-col-phone <?= $card->getClass() ?>" id="prov-<?= $converter->getName() ?>" data-name="<?= $converter->getName() ?>">
                             <div class="mdl-card__title">
                                 <h2 class="mdl-card__title-text"><?= $card->getTitle() ?></h2>
                             </div>
@@ -177,6 +177,7 @@ $provider = new FuelioImporter\ConverterProvider();
                                 </div>
                             <?php } ?>
                         </div>
+                    <div class="mdl-cell mdl-cell--hide-desktop mdl-cell--1-col-tablet mdl-cell--1-col-phone"></div>
                     <?php } ?>
 
                     <div class="mdl-cell mdl-cell--1-col"></div>
