@@ -43,6 +43,14 @@ $provider = new FuelioImporter\ConverterProvider();
         <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.blue_grey-amber.min.css" />
         <script src="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.min.js"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <!-- Begin Cookie Consent plugin by Silktide - http://silktide.com/cookieconsent -->
+        <script type="text/javascript">
+            window.cookieconsent_options = {"message":"This website uses cookies to ensure you get the best experience on our website","dismiss":"Got it!","learnMore":"More info","link":null,"theme":"dark-bottom"};
+        </script>
+
+        <script type="text/javascript" src="//s3.amazonaws.com/cc.silktide.com/cookieconsent.latest.min.js"></script>
+        <!-- End Cookie Consent plugin -->
+
         <?php
         foreach ($provider as $converter) {
             if (!empty($converter->getStylesheetLocation())) {
@@ -73,8 +81,11 @@ $provider = new FuelioImporter\ConverterProvider();
                 outline-offset: 8px;
             }
 
-            #converters > .mdl-card {
+            #converters .mdl-card {
                 cursor:pointer;
+            }
+            .fullwidth {
+                width:100%;
             }
         </style>
     </head>
@@ -144,29 +155,29 @@ $provider = new FuelioImporter\ConverterProvider();
                 <!-- Google ads placeholder -->
 
                 <div class="page-content mdl-grid" id="converters">
-                    <div class="mdl-cell mdl-cell--1-col"></div>
+                    <div class="mdl-cell mdl-cell--1-col "></div>
 
                     <?php
                     foreach ($provider as $converter) {
                         $card = $converter->getCard();
                         ?>
-                        <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col-desktop mdl-cell--7-col-tablet mdl-cell--3-col-phone <?= $card->getClass() ?>" id="prov-<?= $converter->getName() ?>" data-name="<?= $converter->getName() ?>">
-                            <div class="mdl-card__title">
+                    <div class="mdl-cell--stretch mdl-cell mdl-cell--5-col-desktop mdl-cell--7-col-tablet mdl-cell--3-col-phone">
+                        <div class="mdl-card fullwidth mdl-shadow--2dp mdl-cell--stretch  <?= $card->getClass() ?>" id="prov-<?= $converter->getName() ?>" data-name="<?= $converter->getName() ?>">
+                            <div class="mdl-card__title mdl-card--border">
                                 <h2 class="mdl-card__title-text"><?= $card->getTitle() ?></h2>
                             </div>
-                            <div class="mdl-card__supporting-text">
+                            <div class="mdl-card__supporting-text ">
                                 <?= $card->getSupporting() ?>
                             </div>
 
-                            <?php if (!empty($card->getActions())) { ?>
-                                <div class="mdl-card__actions mdl-card--border">
-                                    <?php foreach ($card->getActions() as $action) { ?>
-                                        <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="<?= $action[2] ?>">
-                                            <?= $action[0] ?>
-                                        </a>
-                                    <?php } ?>
-                                </div>
-                            <?php } ?>
+                            <div class="mdl-card__actions mdl-card--border">
+                                <a id="select-file-<?= $converter->getName() ?>" class="mdl-button sf mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored mdl--button--primary"><i class="material-icons">file_upload</i></a>
+                                <?php foreach ($card->getActions() as $action) { ?>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="<?= $action[2] ?>">
+                                        <?= $action[0] ?>
+                                    </a>
+                                <?php } ?>
+                            </div>
                             <?php if (!empty($card->getMenu())) { ?>
                                 <div class="mdl-card__menu">
                                     <?php foreach ($card->getMenu() as $menu) { ?>
@@ -177,11 +188,15 @@ $provider = new FuelioImporter\ConverterProvider();
                                 </div>
                             <?php } ?>
                         </div>
+                        <div class="mdl-tooltip" for="select-file-<?= $converter->getName() ?>">Select file to convert</div>
+                    </div>
                     <div class="mdl-cell mdl-cell--hide-desktop mdl-cell--1-col-tablet mdl-cell--1-col-phone"></div>
                     <?php } ?>
 
                     <div class="mdl-cell mdl-cell--1-col"></div>
                 </div>
+                <!-- Let's make some space for tooltips -->
+                <div class="mdl-grid"></div>
             </main>
         </div>
         <?php @include '../view/analytics.html' ?>
@@ -230,7 +245,8 @@ $provider = new FuelioImporter\ConverterProvider();
             var click = function (e) {
                 // Prevent action menu items from triggering file selection dialog
                 var etgt = $(e.target);
-                if (etgt.is(".mdl-button") || etgt.parent().is(".mdl-button"))
+                
+                if (etgt.is(".mdl-button") || (etgt.parent().is(".mdl-button") && etgt.parent().attr("href") !== undefined))
                     return;
                 e.preventDefault();
                 // Set form's "C" value
@@ -247,7 +263,8 @@ $provider = new FuelioImporter\ConverterProvider();
                     "dragover": dragover,
                     "drop": drop,
                     "click": click
-                }, ".mdl-card:not(.mdl-button)");
+                }, ".mdl-card");
+                $("#converters a.sf").on("click", click);
                 $("form.ghost :file").change(function () {
                     $("form.ghost").submit();
                 });
