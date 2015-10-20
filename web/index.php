@@ -249,7 +249,7 @@ $provider = new FuelioImporter\ConverterProvider();
                     return;
                 e.preventDefault();
                 // Set form's "C" value
-                $("form.ghost input[name=c]").val([$(this).data("name")]);
+                $("form.ghost input[name=c]").val([$(this).closest(".mdl-card[id]").data("name")]);
                 $("form.ghost :file").click();
                 return false;
             }
