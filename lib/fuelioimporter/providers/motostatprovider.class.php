@@ -67,8 +67,9 @@ class MotostatProvider implements IConverter {
     }
 
     public function processFile(\SplFileObject $in) {
-        if (($in->isFile() && !$in->isReadable()) || $in->isDir())
+        if ($in->isDir() || ($in->isFile() && !$in->isReadable())) {
             throw new InvalidFileFormatException();
+        }
 
         $out = new FuelioBackupBuilder();
 
@@ -77,16 +78,17 @@ class MotostatProvider implements IConverter {
         // Verify file header
         $head = $in->fgetcsv(';');
 
-        if (count($head) != 23)
+        if (count($head) !== 23) {
             throw new InvalidFileFormatException();
+        }
 
         // First column might have BOM
-        $hasBOM = substr($head[0], 0, 3) == pack('CCC', 239, 187, 191);
+        $hasBOM = substr($head[0], 0, 3) === pack('CCC', 239, 187, 191);
         if ($hasBOM) {
             $head[0] = substr($head[0], 3);
         }
 
-        if ($head[0] != 'cost_id') {
+        if ($head[0] !== 'cost_id') {
             throw new InvalidFileFormatException();
         }
 
@@ -120,7 +122,7 @@ class MotostatProvider implements IConverter {
             $entry->setDate($log[3]);
             $entry->setOdo($log[6]);
             $entry->setFuel($log[8]);
-            $entry->setFullFillup($log[11] == 'full');
+            $entry->setFullFillup($log[11] === 'full');
             $entry->setPrice($log[9]);
             $entry->setConsumption($log[18]);
             $entry->setNotes($log[21]);
