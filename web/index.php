@@ -110,7 +110,7 @@ $provider = new FuelioImporter\ConverterProvider();
                     <!-- Navigation -->
                     <nav class="mdl-navigation">
                         <a class="mdl-navigation__link" href="https://github.com/Programistyk/FuelioImport">GitHub</a>
-                        <a class="mdl-navigation__link" href="http://www.programistyk.pl">Programistyk</a>
+                        <a class="mdl-navigation__link" href="http://www.programistyk.pl"><img src="http://www.programistyk.pl/favicon-32x32.png" width="16" height="16" alt=""/> Programistyk</a>
                     </nav>
                 </div>
             </header>
@@ -239,7 +239,7 @@ $provider = new FuelioImporter\ConverterProvider();
                     $("form.ghost input[name=c]").val([$(this).data("name")]);
                 }
                 return false;
-            }
+            };
 
             var click = function (e) {
                 // Prevent action menu items from triggering file selection dialog
@@ -252,18 +252,19 @@ $provider = new FuelioImporter\ConverterProvider();
                 $("form.ghost input[name=c]").val([$(this).closest(".mdl-card[id]").data("name")]);
                 $("form.ghost :file").click();
                 return false;
-            }
+            };
 
             if (window.FileReader)
             {
-                $("#converters").on({
+                var conv = $("#converters");
+                conv.on({
                     "dragenter": dragenter,
                     "dragleave": dragleave,
                     "dragover": dragover,
                     "drop": drop,
                     "click": click
                 }, ".mdl-card");
-                $("#converters a.sf").on("click", click);
+                conv.find("a.sf").on("click", click);
                 $("form.ghost :file").change(function () {
                     $("form.ghost").submit();
                 });
