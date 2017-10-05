@@ -125,7 +125,7 @@ class AcarProvider implements IConverter {
             $this->preferences[$key] = $value;
         }
     }
-    
+
     /**
      * Reads metadata.inf into $metadata array
      * @param ZipArchive $in Input archive
@@ -196,6 +196,8 @@ class AcarProvider implements IConverter {
         switch ($this->preferences['acar.volume-unit']) {
             case 'L':
                 return Vehicle::LITRES;
+            case 'gal (US)':
+                return Vehicle::GALLONS_US;
             default:
                 throw new \FuelioImporter\InvalidUnitException();
         }
@@ -230,6 +232,8 @@ class AcarProvider implements IConverter {
 
             case 'L/100km':
                 return Vehicle::L_PER_100KM;
+            case 'MPG (US)':
+                return Vehicle::MPG_US;
             default:
                 throw new \FuelioImporter\InvalidUnitException();
         }
@@ -285,7 +289,7 @@ class AcarProvider implements IConverter {
             // and we should not store it
             // $consumption = (string) $record->{'fuel-efficiency'};
             // $entry->setConsumption($this->calculateConsumption($consumption, $this->getConsumptionUnit()));
-            
+
             $entry->setGeoCoords((string) $record->latitude, (string) $record->longitude);
             $entry->setFullFillup((string) $record->partial != 'true');
             $entry->setMissedEntries((string) $record->{'previous-missed-fillups'} == 'true');
