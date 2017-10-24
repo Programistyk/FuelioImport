@@ -34,8 +34,8 @@
         <meta name="theme-color" content="#616161">
 
         <link href='//fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en' rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.blue_grey-amber.min.css" />
-        <script src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+        <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue_grey-amber.min.css" />
+        <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
         <style type="text/css">
