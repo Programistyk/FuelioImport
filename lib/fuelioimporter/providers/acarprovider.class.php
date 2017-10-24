@@ -4,6 +4,7 @@ namespace FuelioImporter\Providers;
 
 use FuelioImporter\IConverter;
 use FuelioImporter\FuelioBackupBuilder;
+use FuelioImporter\InvalidFileFormatException;
 use FuelioImporter\Vehicle;
 use FuelioImporter\FuelLogEntry;
 use FuelioImporter\CostCategory;
@@ -179,8 +180,8 @@ class AcarProvider implements IConverter {
         $vehicle->setPlate((string)$data->{'license-plate'});
         $vehicle->setVIN((string)$data->vin);
         $vehicle->setInsurance((string)$data->{'insurance-policy'});
-        $vehicle->setFuelUnit($this->getFuelUnit());
-        $vehicle->setDistanceUnit($this->getDistanceUnit());
+        $vehicle->setFuelUnit($this->getFuelUnit($data));
+        $vehicle->setDistanceUnit($this->getDistanceUnit($data));
         $vehicle->setConsumptionUnit($this->getConsumptionUnit());
 
         $out->writeVehicle($vehicle);
@@ -188,13 +189,23 @@ class AcarProvider implements IConverter {
 
     /**
      * Reads fuel unit from aCars preferences
+     * @param SimpleXmlElement $vehicleNode Vehicle node for additional data
      * @return integer Vehicle constant
      * @throws \FuelioImporter\InvalidUnitException On unsupported unit
      */
-    protected function getFuelUnit() {
+    protected function getFuelUnit(SimpleXMLElement $vehicleNode) {
         // @TODO: How does aCar mark US / UK gallons?
-        switch ($this->preferences['acar.volume-unit']) {
+
+        // New aCar version stores volume unit per vehicle, not globally
+        if (array_key_exists('acar.volume-unit', $this->preferences)) {
+            $volume_unit = $this->preferences['acar.volume-unit'];
+        }
+        else {
+            $volume_unit = (string)$vehicleNode->{'volume-unit'};
+        }
+        switch ($volume_unit) {
             case 'L':
+            case 'liter':
                 return Vehicle::LITRES;
             case 'gal (US)':
                 return Vehicle::GALLONS_US;
@@ -208,12 +219,21 @@ class AcarProvider implements IConverter {
      * @return integer Vehicle constant
      * @throws \FuelioImporter\InvalidUnitException
      */
-    protected function getDistanceUnit() {
-        switch ($this->preferences['acar.distance-unit']) {
+    protected function getDistanceUnit(SimpleXMLElement $vehicleNode) {
+        // New aCar version stores distance unit per vehicle, not globally
+        if (array_key_exists('acar.distance-unit', $this->preferences)) {
+            $distance_unit = $this->preferences['acar.distance-unit'];
+        }
+        else {
+            $distance_unit = (string)$vehicleNode->{'distance-unit'};
+        }
+        switch ($distance_unit) {
             case 'm':
             case 'mi' :
+            case 'mile' : // @todo: Can anybody confirm this?
                 return Vehicle::MILES;
             case 'km':
+            case 'kilometer':
                 return Vehicle::KILOMETERS;
             default:
                 throw new \FuelioImporter\InvalidUnitException();
@@ -335,13 +355,48 @@ class AcarProvider implements IConverter {
     /**
      * Reads services.xml and stores them as CostCategory
      * @param ZipArchive $in Input archive
+     * @throws InvalidFileFormatException
      */
     protected function readServicesAsCategories(ZipArchive $in) {
-        $xml = new \SimpleXMLElement(stream_get_contents($in->getStream('services.xml')));
-        foreach ($xml->service as $service) {
+        // Depending on aCar version, this data are in services.xml or event-subtypes.xml
+        if ($in->statName('event-subtypes.xml') !== false) {
+            $this->readNewServiceDefinition(new \SimpleXMLElement(stream_get_contents($in->getStream('event-subtypes.xml'))));
+        }
+
+        else if ($in->statName('services.xml') !== false) {
+            $this->readOldServiceDefinition(new \SimpleXMLElement(stream_get_contents($in->getStream('services.xml'))));
+        }
+        else throw new InvalidFileFormatException();
+
+    }
+
+    /**
+     * Reads old-style service definitions
+     * @param SimpleXMLElement $node
+     */
+    private function readOldServiceDefinition(SimpleXMLElement $node)
+    {
+        foreach ($node->service as $service) {
             $atts = $service->attributes();
-            $id = intval($atts['id']);
+            $id = (int)$atts['id'];
             $name = (string) $service->name;
+            $this->services[$id] = new CostCategory(count($this->services), $name);
+        }
+    }
+
+    private function readNewServiceDefinition(SimpleXMLElement $node)
+    {
+        foreach ($node->{'event-subtype'} as $subtype) {
+            $atts = $subtype->attributes();
+
+            // Skip non-expenses
+            if ((string)$atts['type'] !== 'service') {
+                continue;
+            }
+
+            $id = (int)$atts['id'];
+            $name = (string) $subtype->name;
+
             $this->services[$id] = new CostCategory(count($this->services), $name);
         }
     }
@@ -349,12 +404,44 @@ class AcarProvider implements IConverter {
     /**
      * Reads expenses.xml and stores them as CostCategory
      * @param ZipArchive $in Input archive
+     * @throws InvalidFileFormatException
      */
     protected function readExpensesAsCategories(ZipArchive $in) {
-        $xml = new \SimpleXMLElement(stream_get_contents($in->getStream('expenses.xml')));
-        foreach ($xml->expense as $expense) {
+        // Depending on aCar version, this data are in expenses.xml or event-subtypes.xml
+        if ($in->statName('event-subtypes.xml') !== false) {
+            $this->readNewExpensesAsCategories(new \SimpleXMLElement(stream_get_contents($in->getStream('event-subtypes.xml'))));
+        }
+        else if ($in->statName('expenses.xml') !== false) {
+            $this->readOldExpensesAsCategories(new \SimpleXMLElement(stream_get_contents($in->getStream('expenses.xml'))));
+        } else throw new InvalidFileFormatException();
+    }
+
+    private function readNewExpensesAsCategories(SimpleXMLElement $node)
+    {
+        foreach ($node->{'event-subtype'} as $subtype) {
+            $atts = $subtype->attributes();
+
+            // Skip non-expenses
+            if ((string)$atts['type'] !== 'expense') {
+                continue;
+            }
+
+            $id = (int)$atts['id'];
+            $name = (string) $subtype->name;
+
+            $this->expenses[$id] = new CostCategory(count($this->expenses), $name);
+        }
+    }
+
+    /**
+     * Reads old-style expense definitions
+     * @param SimpleXMLElement $node
+     */
+    private function readOldExpensesAsCategories(SimpleXMLElement $node)
+    {
+        foreach ($node->expense as $expense) {
             $atts = $expense->attributes();
-            $id = intval($atts['id']);
+            $id = (int)$atts['id'];
             $name = (string) $expense->name;
             $this->expenses[$id] = new CostCategory(count($this->expenses), $name);
         }
