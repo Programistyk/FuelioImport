@@ -188,7 +188,7 @@ class AcarProvider implements IConverter {
     }
 
     /**
-     * Reads fuel unit from aCars preferences
+     * Reads fuel unit from aCar preferences or vehicle node
      * @param SimpleXmlElement $vehicleNode Vehicle node for additional data
      * @return integer Vehicle constant
      * @throws \FuelioImporter\InvalidUnitException On unsupported unit
@@ -215,7 +215,7 @@ class AcarProvider implements IConverter {
     }
 
     /**
-     * Reads distance unit from aCars preferences
+     * Reads distance unit from aCar preferences or vehicle node
      * @return integer Vehicle constant
      * @throws \FuelioImporter\InvalidUnitException
      */
@@ -384,6 +384,10 @@ class AcarProvider implements IConverter {
         }
     }
 
+    /**
+     * Reads new service definitions
+     * @param SimpleXMLElement $node
+     */
     private function readNewServiceDefinition(SimpleXMLElement $node)
     {
         foreach ($node->{'event-subtype'} as $subtype) {
@@ -416,6 +420,10 @@ class AcarProvider implements IConverter {
         } else throw new InvalidFileFormatException();
     }
 
+    /**
+     * Reads new expense definitions
+     * @param SimpleXMLElement $node
+     */
     private function readNewExpensesAsCategories(SimpleXMLElement $node)
     {
         foreach ($node->{'event-subtype'} as $subtype) {
@@ -478,8 +486,17 @@ class AcarProvider implements IConverter {
         $cost->setDate($this->readDate($expense->date));
         $cost->setCost((string) $expense->{'total-cost'});
         $cost->setOdo((string) $expense->{'odometer-reading'});
+        // Set category
         if ($expense->expenses && $expense->expenses->expense[0]) {
             $atts = $expense->expenses->expense[0]->attributes();
+            $id = (string) $atts['id'];
+            if (isset($this->expenses[$id])) {
+                $cost->setCostCategoryId($this->expenses[$id]->getTypeId());
+            }
+        }
+        // Set new-format category if available
+        if (isset($expense->subtypes) && $expense->subtypes->subtype[0]) {
+            $atts = $expense->subtypes->subtype[0]->attributes();
             $id = (string) $atts['id'];
             if (isset($this->expenses[$id])) {
                 $cost->setCostCategoryId($this->expenses[$id]->getTypeId());
@@ -489,8 +506,13 @@ class AcarProvider implements IConverter {
         $notes = (string) $expense->notes;
         $notes .= ' ' . (string) $expense->{'expense-center-name'} . ' ' . (string) $expense->{'expense-center-address'};
 
-        // Build title, something short, let's take notes till first ','
-        $title = (string) $expense->notes;
+        // Let's not blow up CSV output with multi-line entries
+        $notes = str_replace("\n", ', ', trim($notes));
+
+        // Build title, something short, let's take first line of notes, till first ','
+        $title = explode("\n", (string) $expense->notes, 2);
+        $title = trim($title[0]);
+
         if (strpos($title, ',') !== false) {
             $title = substr($title, 0, strpos($title, ','));
         }
@@ -510,8 +532,17 @@ class AcarProvider implements IConverter {
         $cost->setDate($this->readDate($service->date));
         $cost->setCost((string) $service->{'total-cost'});
         $cost->setOdo((string) $service->{'odometer-reading'});
+        // Set category
         if ($service->services && $service->services->service[0]) {
             $atts = $service->services->service[0]->attributes();
+            $id = (string) $atts['id'];
+            if (isset($this->services[$id])) {
+                $cost->setCostCategoryId($this->services[$id]->getTypeId());
+            }
+        }
+
+        if (isset($service->subtypes) && $service->subtypes->subtype[0]) {
+            $atts = $service->subtypes->subtype[0]->attributes();
             $id = (string) $atts['id'];
             if (isset($this->services[$id])) {
                 $cost->setCostCategoryId($this->services[$id]->getTypeId());
@@ -521,8 +552,13 @@ class AcarProvider implements IConverter {
         $notes = (string) $service->notes;
         $notes .= ' ' . (string) $service->{'expense-center-name'} . ' ' . (string) $service->{'expense-center-address'};
 
-        // Build title, something short, let's take notes till first ','
-        $title = (string) $service->notes;
+        // Let's not blow up CSV output with multi-line entries
+        $notes = str_replace("\n", ', ', trim($notes));
+
+        // Build title, something short, let's take first line of notes, till first ','
+        $title = explode("\n", (string) $service->notes, 2);
+        $title = trim($title[0]);
+
         if (strpos($title, ',') !== false) {
             $title = substr($title, 0, strpos($title, ','));
         }
@@ -545,12 +581,28 @@ class AcarProvider implements IConverter {
 
         $out->writeCoststHeader();
 
-        foreach ($data->{'expense-records'}->{'expense-record'} as $expense) {
-            $this->processExpense($expense, $out);
+        if (isset($data->{'expense-records'})) {
+            foreach (@$data->{'expense-records'}->{'expense-record'} as $expense) {
+                $this->processExpense($expense, $out);
+            }
         }
 
-        foreach ($data->{'service-records'}->{'service-record'} as $service) {
-            $this->processService($service, $out);
+        if (isset($data->{'service-records'})) {
+            foreach (@$data->{'service-records'}->{'service-record'} as $service) {
+                $this->processService($service, $out);
+            }
+        }
+
+        // New file format, expenses and services are now called: events
+        if (isset($data->{'event-records'})) {
+            foreach (@$data->{'event-records'}->{'event-record'} as $event_record) {
+                $type = (string)$event_record->type;
+                if ($type === 'expense') {
+                    $this->processExpense($event_record, $out);
+                } else if ($type === 'service') {
+                    $this->processService($event_record, $out);
+                }
+            }
         }
     }
 
