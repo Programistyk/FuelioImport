@@ -20,10 +20,11 @@ for completely new installation of the app.
 Fuelio's file format supports only one car definition in file, so if you convert backup containing more cars (like aCar's), only first car is going to be imported.
 
 aCar format support only Litres as Fuel Unit and l/100km as Consumption Unit.
+It is possible to import aCar backups with US Gallons, but it hasn't tested and results may be unexpected. 
 
 Due to limited documentation and access to Fuel Log dumps, only Litres as Fuel Unit, l/100km as Consumption Unit and Kilometers as Dinstance unit are supported.
 
 ## Requirements
-FuelioImport converter is built for current PHP version (PHP7), but anything 5.1+ should do the job.
+FuelioImport converter is built for current PHP version (PHP7), but any stable PHP version should do the job.
 
  * For aCar backup we need SimpleXMLElement and Zip support
