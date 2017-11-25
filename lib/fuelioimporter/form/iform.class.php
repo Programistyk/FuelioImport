@@ -7,7 +7,7 @@ namespace FuelioImporter\Form;
  * @package FuelioImporter\Form
  * @author Kamil Kamiński
  */
-interface IForm extends \ArrayAccess {
+interface IForm extends \ArrayAccess, \IteratorAggregate {
     /**
      * Processes $_POST data for form
      * @param $post_data array $_POST

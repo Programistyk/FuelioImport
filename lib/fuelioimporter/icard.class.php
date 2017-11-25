@@ -42,7 +42,7 @@ interface ICard {
 
     /**
      * Returns configuration form interface
-     * @return IForm
+     * @return IForm|null
      */
     public function getForm();
 }

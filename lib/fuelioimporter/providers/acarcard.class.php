@@ -27,4 +27,9 @@ class AcarCard implements ICard {
     public function getSupporting() {
         return '<p>You can upload an .abp backup file from your aCar and we will convert it into Fuelio\'s CSV format. Just tap this card, or drop a file onto it.</p><p>You can also import backups from aCar free version. Use Help button below to read more.</p>';
     }
+
+    public function getForm()
+    {
+        return new AcarForm();
+    }
 }

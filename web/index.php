@@ -42,7 +42,7 @@ $provider = new FuelioImporter\ConverterProvider();
     <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue_grey-amber.min.css" />
     <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    
+
     <!-- Begin Cookie Consent plugin by Silktide - http://silktide.com/cookieconsent -->
     <script type="text/javascript">
         window.cookieconsent_options = {
@@ -59,6 +59,7 @@ $provider = new FuelioImporter\ConverterProvider();
     <!-- End Cookie Consent plugin -->
 
     <?php
+    /** @var \FuelioImporter\IConverter $converter */
     foreach ($provider as $converter) {
         if (!empty($converter->getStylesheetLocation())) {
             ?>
@@ -109,11 +110,14 @@ $provider = new FuelioImporter\ConverterProvider();
     <fieldset>
         <input type="text" name="n" required="required" placeholder="Car name"/>
         <input type="file" name="f"/>
-        <?php foreach ($provider as $converter) { ?>
+        <?php foreach ($provider as $converter) : ?>
             <input type="radio" id="radio-<?= $converter->getName() ?>" name="c" value="<?= $converter->getName() ?>"
                    required="required"/> <label
                 for="radio-<?= $converter->getName() ?>"> <?= $converter->getTitle() ?></label>
-        <?php } ?>
+            <?php $form = $converter->getCard()->getForm(); if ($form) : ?>
+                <fieldset><?php foreach ($form as $field) : echo $field->render(); endforeach; ?></fieldset>
+                <?php endif; // $form ?>
+        <?php endforeach; ?>
         <textarea name="datastream" id="datastream"></textarea>
     </fieldset>
 </form>
@@ -188,6 +192,12 @@ $provider = new FuelioImporter\ConverterProvider();
                         </div>
                         <div class="mdl-card__supporting-text ">
                             <?= $card->getSupporting() ?>
+                            <?php $form = $card->getForm(); if ($form) :
+                    ?>
+                    <form action="/" method="POST" name="<?= addcslashes($form->getName(), '"')?>">
+                        <fieldset><?php foreach ($form as $field) : echo $field->render(); endforeach; //$form->fields ?></fieldset>
+                    </form>
+                    <?php endif; //$form ?>
                         </div>
 
                         <div class="mdl-card__actions mdl-card--border">
@@ -266,10 +276,12 @@ $provider = new FuelioImporter\ConverterProvider();
         };
 
         var click = function (e) {
-            // Prevent action menu items from triggering file selection dialog
+            // Prevent action menu items from triggering file selection dialog, same for form fields
             var etgt = $(e.target);
 
-            if (etgt.is(".mdl-button") || (etgt.parent().is(".mdl-button") && etgt.parent().attr("href") !== undefined))
+            if (etgt.is(".mdl-button")
+                || (etgt.parent().is(".mdl-button") && etgt.parent().attr("href") !== undefined)
+                || $(etgt).parents("form").length>0)
                 return;
             e.preventDefault();
             // Set form's "C" value

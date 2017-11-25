@@ -46,7 +46,7 @@ abstract class BaseForm implements IForm {
 
     public function offsetSet($offset, $value)
     {
-        if ($offset === null || !is_string($offset)) {
+        if ($offset !== null && !is_string($offset)) {
             throw new \InvalidArgumentException('Offset name must be of string type.');
         }
 
@@ -55,10 +55,10 @@ abstract class BaseForm implements IForm {
         }
 
         if ($offset === null) {
-            $this->fields[] = $value;
-        } else {
-            $this->fields[$offset] = $value;
+            $offset = $value->getName();
         }
+
+        $this->fields[$offset] = $value;
         $value->setForm($this);
     }
 
@@ -117,6 +117,11 @@ abstract class BaseForm implements IForm {
 
             $this->data[$name] = $field->getValue();
         }
+    }
+
+    public function getIterator()
+    {
+        return new \ArrayIterator($this->fields);
     }
     //</editor-fold>
 }
