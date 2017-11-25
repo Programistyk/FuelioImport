@@ -1,6 +1,7 @@
 <?php
 
 namespace FuelioImporter;
+use FuelioImporter\Form\IForm;
 
 /**
  * Converter card interface for plugin GUI part
@@ -38,4 +39,10 @@ interface ICard {
      * @return array Array of card menu entries
      */
     public function getMenu();
+
+    /**
+     * Returns configuration form interface
+     * @return IForm
+     */
+    public function getForm();
 }
