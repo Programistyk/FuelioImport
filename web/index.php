@@ -147,7 +147,7 @@ $provider = new FuelioImporter\ConverterProvider();
                 }
                 ?>
         </nav>
-        <nav class="mdl-navigation"
+        <nav class="mdl-navigation">
         <a class="mdl-navigation__link" href="https://github.com/Programistyk/FuelioImport">GitHub</a>
         <a class="mdl-navigation__link" href="http://www.programistyk.pl">Programistyk</a>
         </nav>

@@ -19,6 +19,12 @@ interface IConverter {
      * @return string
      */
     public function getTitle();
+
+    /**
+     * Filename part of output
+     * @return string
+     */
+    public function getOutputFileName();
     
     /**
      * Array of errors during conversion

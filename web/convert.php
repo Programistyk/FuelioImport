@@ -36,7 +36,7 @@ try {
     }
 
     $outfile = $converter->processFile($infile, $form ? $form->getData() : null);
-    $fname = 'FuelioBackup-' . ucfirst(preg_replace('/\s+/', '-', $converter->getTitle())) . '.csv';
+    $fname = 'FuelioBackup-' . ucfirst(preg_replace('/\s+/', '-', $converter->getOutputFileName())) . '.csv';
     /*if (defined('DEBUG'))
         header('Content-Type: text/plain, charset=UTF-8');
     else {*/

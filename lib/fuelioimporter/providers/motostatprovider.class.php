@@ -44,6 +44,11 @@ class MotostatProvider implements IConverter {
         return 'Motostat';
     }
 
+    public function getOutputFileName()
+    {
+        return $this->getTitle();
+    }
+
     public function getCard() {
         return new MotostatCard();
     }

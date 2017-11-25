@@ -24,6 +24,11 @@ class FuellogProvider implements IConverter
         return 'Fuel Log';
     }
 
+    public function getOutputFileName()
+    {
+        return $this->getTitle();
+    }
+
     public function getStylesheetLocation()
     {
         return null;

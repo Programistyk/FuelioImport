@@ -39,7 +39,13 @@ class AcarProvider implements IConverter {
 
     // @see IConverter
     public function getTitle() {
-        return 'aCar ABP-car-' . $this->selected_vehicle;
+        return 'aCar ABP';
+    }
+
+    // @see IConverter
+    public function getOutputFileName()
+    {
+        return 'aCar-car-' . $this->selected_vehicle;
     }
 
     // @see IConverter
