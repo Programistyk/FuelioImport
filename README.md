@@ -17,7 +17,7 @@ Current versions of Fuelio app keep cost categories car-independent. If you have
 leaving cost categories defined in our export. Because of this, there is no guarantee that your categories will be kept and we suggest to convert only data
 for completely new installation of the app.
 
-Fuelio's file format supports only one car definition in file, so if you convert backup containing more cars (like aCar's), only first car is going to be imported.
+Fuelio's file format supports only one car definition in file, so if you convert backup containing more cars (like aCar's), you would need to specify, which vehicle you want converted.
 
 aCar format support only Litres as Fuel Unit and l/100km as Consumption Unit.
 It is possible to import aCar backups with US Gallons, but it hasn't tested and results may be unexpected. 
