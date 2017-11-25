@@ -24,16 +24,25 @@ try {
     }
 
     $converter->setCarName($_POST['n']);
-    $fname = 'FuelioBackup-' . ucfirst(preg_replace('/\s+/', '-', $converter->getTitle())) . '.csv';
 
+    // Validate optional form
+    $form = $converter->getCard()->getForm();
+    if ($form) {
+        $form->process($_POST);
+        if (!$form->isValid()) {
+            $errors = $form->getErrors();
+            throw array_pop($errors);
+        }
+    }
+
+    $outfile = $converter->processFile($infile, $form ? $form->getData() : null);
+    $fname = 'FuelioBackup-' . ucfirst(preg_replace('/\s+/', '-', $converter->getTitle())) . '.csv';
     /*if (defined('DEBUG'))
         header('Content-Type: text/plain, charset=UTF-8');
     else {*/
-        header('Content-Type: text/csv, charset=UTF-8');
-        header('Content-Disposition: attachment; filename="' . $fname . '"');
+    header('Content-Type: text/csv, charset=UTF-8');
+    header('Content-Disposition: attachment; filename="' . $fname . '"');
     //}
-    
-    $outfile = $converter->processFile($infile);
     $outfile->rewind();
     $outfile->fpassthru();
 } catch (Exception $ex) {

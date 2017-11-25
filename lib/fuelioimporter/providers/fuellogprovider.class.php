@@ -51,7 +51,7 @@ class FuellogProvider implements IConverter
         return array();
     }
 
-    public function processFile(\SplFileObject $in)
+    public function processFile(\SplFileObject $in, $form_data)
     {
         if ($in->isDir() || ($in->isFile() && !$in->isReadable())) {
             throw new InvalidFileFormatException();

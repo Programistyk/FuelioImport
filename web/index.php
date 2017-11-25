@@ -194,9 +194,7 @@ $provider = new FuelioImporter\ConverterProvider();
                             <?= $card->getSupporting() ?>
                             <?php $form = $card->getForm(); if ($form) :
                     ?>
-                    <form action="/" method="POST" name="<?= addcslashes($form->getName(), '"')?>">
-                        <fieldset><?php foreach ($form as $field) : echo $field->render(); endforeach; //$form->fields ?></fieldset>
-                    </form>
+                    <fieldset><?php foreach ($form as $field) : echo $field->render(); endforeach; //$form->fields ?></fieldset>
                     <?php endif; //$form ?>
                         </div>
 
@@ -259,6 +257,13 @@ $provider = new FuelioImporter\ConverterProvider();
             return false;
         };
 
+        var process_fields = function(form, target) {
+            $(".mdl-layout__container fieldset :input").each(function(i, e) {
+                var el = $(e);
+                $("form.ghost [name='" + el.attr("name") + "']").val(el.val());
+            });
+        };
+
         var drop = function (e) {
             e.preventDefault();
             $(this).removeClass("dropactive").addClass("working");
@@ -271,6 +276,7 @@ $provider = new FuelioImporter\ConverterProvider();
                 var form = $("form.ghost");
                 var name = $(this).data("name");
                 form.find("input[name=c]").val([name]);
+                process_fields();
             }
             return false;
         };
@@ -278,15 +284,16 @@ $provider = new FuelioImporter\ConverterProvider();
         var click = function (e) {
             // Prevent action menu items from triggering file selection dialog, same for form fields
             var etgt = $(e.target);
+            var form = $("form.ghost");
+            process_fields();
 
             if (etgt.is(".mdl-button")
                 || (etgt.parent().is(".mdl-button") && etgt.parent().attr("href") !== undefined)
-                || $(etgt).parents("form").length>0)
+                || $(etgt).parents("fieldset").length>0)
                 return;
             e.preventDefault();
             // Set form's "C" value
             var name = $(this).closest(".mdl-card[id]").data("name");
-            var form = $("form.ghost");
             form.find("input[name=c]").val([name]);
             form.find(":file").click();
             return false;

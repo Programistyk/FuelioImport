@@ -69,14 +69,13 @@ abstract class BaseForm implements IForm {
 
     public function getData()
     {
-        $out = new \SplFixedArray(count($this->fields));
-        $idx = 0;
+        $out = array();
         foreach($this->fields as $name => $field) {
             $data = null;
             if ($field->isValid()) {
                 $data = $field->getValue();
             }
-            $out[$idx++] = $data;
+            $out[$name] = $data;
         }
         return $out;
     }
@@ -122,6 +121,11 @@ abstract class BaseForm implements IForm {
     public function getIterator()
     {
         return new \ArrayIterator($this->fields);
+    }
+
+    public function getErrors()
+    {
+        return $this->errors;
     }
     //</editor-fold>
 }

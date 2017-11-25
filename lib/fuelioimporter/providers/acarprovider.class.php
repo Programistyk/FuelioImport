@@ -2,6 +2,7 @@
 
 namespace FuelioImporter\Providers;
 
+use FuelioImporter\Form\FormValidatorException;
 use FuelioImporter\IConverter;
 use FuelioImporter\FuelioBackupBuilder;
 use FuelioImporter\InvalidFileFormatException;
@@ -28,6 +29,8 @@ class AcarProvider implements IConverter {
     protected $expenses = array();
     // List of services from services.xml (as CostCategory instances)
     protected $services = array();
+    // Vehicle number provided by form
+    protected $selected_vehicle = 1;
 
     // @see IConverter
     public function getName() {
@@ -36,7 +39,7 @@ class AcarProvider implements IConverter {
 
     // @see IConverter
     public function getTitle() {
-        return 'aCar ABP';
+        return 'aCar ABP-car-' . $this->selected_vehicle;
     }
 
     // @see IConverter
@@ -52,7 +55,7 @@ class AcarProvider implements IConverter {
     }
 
     // @see IConverter
-    public function processFile(SplFileObject $stream) {
+    public function processFile(SplFileObject $stream, $form_data) {
         // We need to verify that we've got valid archive
 
         $in = new ZipArchive();
@@ -74,8 +77,10 @@ class AcarProvider implements IConverter {
 
         $this->readPreferences($in, $out);
 
+
         // Read vehicle data
-        $data = $this->getVehicle(0, $in);
+        $this->selected_vehicle = intval($form_data['vehicle_id'], 10);
+        $data = $this->getVehicle($this->selected_vehicle, $in);
         // Process vehicle header
         $this->processVehicle($data, $in, $out);
 
@@ -264,19 +269,23 @@ class AcarProvider implements IConverter {
      * @param integer $iVehicle Vehicle number
      * @param ZipArchive $in
      * @return SimpleXmlElement
-     * @throws \FuelioImporter\InvalidFileFormatException
+     * @throws InvalidFileFormatException
+     * @throws FormValidatorException
      */
     protected function getVehicle($iVehicle, ZipArchive $in) {
         $stream = $in->getStream('vehicles.xml');
         $xml = new \SimpleXMLElement(stream_get_contents($stream));
         if (!$xml) {
-            throw new \FuelioImporter\InvalidFileFormatException();
+            throw new InvalidFileFormatException();
         }
         $children = $xml->children();
         if (empty($children)) {
-            throw new \FuelioImporter\InvalidFileFormatException();
+            throw new InvalidFileFormatException();
         }
-        return $children[$iVehicle];
+        if (!isset($children[$iVehicle-1])) {
+            throw new FormValidatorException('There is no car #' . $iVehicle . ' in backup file.');
+        }
+        return $children[$iVehicle-1];
     }
 
     /**

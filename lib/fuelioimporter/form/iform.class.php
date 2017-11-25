@@ -39,4 +39,10 @@ interface IForm extends \ArrayAccess, \IteratorAggregate {
      */
     public function getData();
 
+    /**
+     * Returns collected validation errors
+     * @return \Throwable[]
+     */
+    public function getErrors();
+
 }

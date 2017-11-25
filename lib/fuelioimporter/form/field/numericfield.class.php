@@ -88,6 +88,8 @@ class NumericField implements IFormField
         if (array_key_exists('min', $this->options) && $this->value < $this->options['min']) {
             throw new FormValidatorException('Field value must be bigger or equal to ' . $this->options['min']);
         }
+
+        return true;
     }
 
     public function setForm(IForm $form)
