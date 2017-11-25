@@ -270,13 +270,13 @@ $provider = new FuelioImporter\ConverterProvider();
             if (!FileReader)
                 alert("FileReader interface is not available. Upgrade your browser or click this card to select file :)");
             else {
-                var fr = new FileReader();
-                fr.onloadend = filereaderload;
-                fr.readAsDataURL(e.originalEvent.dataTransfer.files[0]);
                 var form = $("form.ghost");
                 var name = $(this).data("name");
                 form.find("input[name=c]").val([name]);
                 process_fields();
+                var fr = new FileReader();
+                fr.onloadend = filereaderload;
+                fr.readAsDataURL(e.originalEvent.dataTransfer.files[0]);
             }
             return false;
         };
@@ -310,7 +310,8 @@ $provider = new FuelioImporter\ConverterProvider();
             }, ".mdl-card");
             conv.find("a.sf").on("click", click);
             $("form.ghost :file").change(function () {
-                $("form.ghost").attr("action", "convert.php?converter=" + $("form input[name=c]").val()).submit();
+                $("form.ghost").attr("action", "convert.php?converter=" + $("form input[name=c]").val()).submit().get(0).reset();
+
             });
         }
     }
