@@ -10,7 +10,7 @@ Supported formats are:
 
  * Motostat (.csv)
  * aCar full backup (.abp) (with geolocation!)
- * Fuel Log (.csv) (only kilometers/litres)
+ * Fuel Log (.csv)
 
 ## Limitations
 Current versions of Fuelio app keep cost categories car-independent. If you have entered non-standard categories, Fuelio will assign imported costs to them,
@@ -22,7 +22,8 @@ Fuelio's file format supports only one car definition in file, so if you convert
 aCar format support only Litres as Fuel Unit and l/100km as Consumption Unit.
 It is possible to import aCar backups with US Gallons, but it hasn't tested and results may be unexpected. 
 
-Due to limited documentation and access to Fuel Log dumps, only Litres as Fuel Unit, l/100km as Consumption Unit and Kilometers as Dinstance unit are supported.
+Due to limited documentation and access to Fuel Log dumps, only Litres as Fuel Unit, l/100km as Consumption Unit and Kilometers as Dinstance unit were tested.
+After importing into Fuelio, remember to verify or set your car's fuel type! FuelLog does not support that information at all.
 
 ## Requirements
 FuelioImport converter is built for current PHP version (PHP7), but any stable PHP version should do the job.

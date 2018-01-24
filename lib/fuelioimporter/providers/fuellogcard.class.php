@@ -29,7 +29,7 @@ class FuellogCard implements ICard
 
     public function getSupporting()
     {
-        return '<p>You can drop or upload Fuel Log\'s CSV export into this card and we will convert its data to Fuelio\'s format.</p><p>Find export option in application menu.</p>';
+        return '<p>You can drop or upload Fuel Log\'s CSV export into this card and we will convert its data to Fuelio\'s format.</p><p>Find export option in application menu, make sure you set correct fuel type in Fuelio\'s settings.</p>';
     }
 
     public function getForm()

@@ -6,6 +6,7 @@ use FuelioImporter\FuelioBackupBuilder;
 use FuelioImporter\FuelLogEntry;
 use FuelioImporter\IConverter;
 use FuelioImporter\InvalidFileFormatException;
+use FuelioImporter\InvalidUnitException;
 use FuelioImporter\Vehicle;
 
 class FuellogProvider implements IConverter
@@ -127,9 +128,10 @@ class FuellogProvider implements IConverter
         $vehicle = new Vehicle(
             trim($data[0] . ' ' . $data[1]), // Build proper name: Make + Model
             $data[2], // Use Notes as description
-            Vehicle::KILOMETERS,
-            Vehicle::LITRES,
-            Vehicle::L_PER_100KM);
+            $this->getDistanceUnit($data[3]),
+            $this->getVolumeUnit($data[4]),
+            $this->getConsumptionUnit($data[5])
+        );
         $out->writeVehicle($vehicle);
     }
 
@@ -178,8 +180,8 @@ class FuellogProvider implements IConverter
     {
         // Let's assume date could be written as X/Y/ZZZZ
         if (strlen($date) >= 8) {
-            // Let's assume they're written with '/' as separator
-            // and its actually D/M/YYYY, as we have no way of detecting M/D/YYYY when day part is < 13
+            // Let's assume it's written with '/' as separator
+            // and it's actually D/M/YYYY, as we have no way of detecting M/D/YYYY when day part is < 13
             if ($date[1] === '/' || $date[2] === '/') {
                 $parts = explode('/', $date, 3);
                 return $parts[2] . '-' . $parts[1] . '-' . $parts[0]; // YYYY-MM-DD
@@ -188,4 +190,107 @@ class FuellogProvider implements IConverter
         return $date; //no-op
     }
 
+
+    /**
+     * Returns distance unit extracted from log
+     * @param $raw string
+     * @return int Vehicle const
+     * @throws InvalidUnitException
+     */
+    protected function getDistanceUnit($raw)
+    {
+        /* Based on FuelLog's explanations.txt */
+
+        switch ((int)$raw) {
+            case 1 : return Vehicle::KILOMETERS;
+            case 2 : return Vehicle::MILES;
+            case 3 : throw new InvalidUnitException('Hours as distance units are not supported.');
+            default : throw new InvalidUnitException('Unsupported distance unit: ' . substr($raw, 1, 10));
+        }
+    }
+
+    /**
+     * Returns volume unit extracted from log
+     * @param $raw string
+     * @return int Vehicle const
+     * @throws InvalidUnitException
+     */
+    protected function getVolumeUnit($raw)
+    {
+        /* Based on FuelLog's explanations.txt */
+
+        switch ((int)$raw) {
+            case 1 : return Vehicle::LITRES;
+            case 2 : return Vehicle::GALLONS_US;
+            case 3 : return Vehicle::GALLONS_UK;
+            case 4 : throw new InvalidUnitException('kWh as volume unit is not supported.');
+            case 5 : throw new InvalidUnitException('Kilogram as volume units is not supported.');
+            case 6 : throw new InvalidUnitException('Gasoline Gallon Equivalent as volume unit is not supported.');
+            default: throw new InvalidUnitException('Unsupported volue unit: ' . substr($raw, 1, 10));
+        }
+    }
+
+    /**
+     * Returns consumption unit extracted from log
+     * @param $raw string
+     * @return int Vehicle const
+     * @throws InvalidUnitException
+     */
+    protected function getConsumptionUnit($raw)
+    {
+
+        /* Based on FuelLog's explanations.txt */
+
+        switch ((int)$raw) {
+            case 1 : return Vehicle::L_PER_100KM;
+            case 2 : return Vehicle::MPG_US;
+            case 3 : return Vehicle::MPG_UK;
+            case 4 : return Vehicle::KM_PER_L;
+//            5 = l/km
+//              6 = l/mi
+//              7 = l/100mi
+//              8 = mi/l
+//              9 = gal(us)/km
+//             10 = gal(us)/100km
+//             11 = gal(us)/mi
+//             12 = gal(us)/100mi
+            case 13 : return Vehicle::KM_PER_GAL_US;
+//             14 = gal(uk)/km
+//             15 = gal(uk)/100km
+//             16 = gal(uk)/mi
+//             17 = gal(uk)/100mi
+            case 18: return Vehicle::KM_PER_GAL_UK;
+//             19 = kWh/km
+//             20 = kWh/100km
+//             21 = kWh/mi
+//             22 = kWh/100mi
+//             23 = km/kWh
+//             24 = mi/kWh
+//             25 = kg/km
+//             26 = kg/100km
+//             27 = kg/mi
+//             28 = kg/100mi
+//             29 = km/kg
+//             30 = mi/kg
+//             31 = gge/km
+//             32 = gge/100km
+//             33 = gge/mi
+//             34 = gge/100mi
+//             35 = km/gge
+//             36 = mi/gge
+//             37 = l/h
+//             38 = h/l
+//             39 = gal(us)/h
+//             40 = h/gal(us)
+//             41 = gal(uk)/h
+//             42 = h/gal(uk)
+//             43 = kWh/h
+//             44 = h/kWh
+//             45 = kg/h
+//             46 = h/kg
+//             47 = gge/h
+//             48 = h/gge
+            default: throw new InvalidUnitException('Selected fuel consumption unit is not supported.');
+        }
+    }
 }
