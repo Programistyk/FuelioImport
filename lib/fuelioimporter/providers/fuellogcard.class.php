@@ -34,6 +34,6 @@ class FuellogCard implements ICard
 
     public function getForm()
     {
-        return null;
+        return new FuelLogForm();
     }
 }

@@ -14,6 +14,8 @@ class FuellogProvider implements IConverter
     protected $vehicles = array();
     /** @var string Vehicle key used to import data */
     protected $vehicle_key = null;
+    /** @var int Vehicle index provided by user */
+    protected $selected_vehicle = null;
 
     public function getName()
     {
@@ -75,6 +77,10 @@ class FuellogProvider implements IConverter
         }
 
         // Import vehicles
+        $this->selected_vehicle = intval($form_data['vehicle_id'], 10) - 1;
+        if ($this->selected_vehicle < 0) {
+            $this->selected_vehicle = null; // Autoselect
+        }
         $this->processVehicles($in, $out);
 
         // Import fillups
@@ -88,6 +94,7 @@ class FuellogProvider implements IConverter
      * @param \SplFileObject $in
      * @param FuelioBackupBuilder $out
      * @throws InvalidFileFormatException
+     * @throws InvalidUnitException
      */
     protected function processVehicles(\SplFileObject $in, FuelioBackupBuilder $out)
     {
@@ -110,6 +117,15 @@ class FuellogProvider implements IConverter
             $this->vehicles[$key] = $line;
 
         } while (!$in->eof() && strpos($line[0], '#', 0) !== 0);
+
+        // If user provided a valid index, select that vehicle
+        if ($this->selected_vehicle !== null) {
+            $keys = array_keys($this->vehicles);
+
+            if (isset($keys[$this->selected_vehicle])) {
+                $this->vehicle_key = $keys[$this->selected_vehicle];
+            }
+        }
 
         if (!reset($this->vehicles)) {
             throw new InvalidFileFormatException('No vehicles in file.');
@@ -144,8 +160,8 @@ class FuellogProvider implements IConverter
         }
 
         $out->writeFuelLogHeader();
-        
-        while (!$in->eof()) {
+
+        do {
             $data = $in->fgetcsv();
             if (!$data) {
                 continue;
@@ -166,7 +182,7 @@ class FuellogProvider implements IConverter
             $entry->setNotes($data[7]);
 
             $out->writeFuelLog($entry);
-        }
+        } while (!$in->eof() && strpos($data[0], '#', 0) !== 0);
     }
 
     /**
