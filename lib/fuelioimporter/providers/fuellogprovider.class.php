@@ -92,7 +92,7 @@ class FuellogProvider implements IConverter
     {
         // "make","model","note","distance","volume","consumption"
         $header = $in->fgetcsv();
-        if ($header[0] !== 'make' || count($header) !== 6) {
+        if ($header[0] !== 'make' || count($header) < 6) {
             throw new InvalidFileFormatException();
         }
         do {
@@ -156,7 +156,7 @@ class FuellogProvider implements IConverter
             }
             
             $entry = new FuelLogEntry();
-            $entry->setDate($data[2]);
+            $entry->setDate($this->normalizeDate($data[2]));
             $entry->setOdo((double)$data[3]);
             $entry->setFuel((double)$data[4]);
             $entry->setPrice((double)$data[5]);
@@ -166,4 +166,26 @@ class FuellogProvider implements IConverter
             $out->writeFuelLog($entry);
         }
     }
+
+    /**
+     * Normalizes date format for DateTime
+     * @param $date string Date
+     * @return string Date in YYYY-MM-DD
+     *
+     * Currently it only detects dd/mm/YYYY format and turns it into YYYY-MM-DD
+     */
+    protected function normalizeDate($date)
+    {
+        // Let's assume date could be written as X/Y/ZZZZ
+        if (strlen($date) >= 8) {
+            // Let's assume they're written with '/' as separator
+            // and its actually D/M/YYYY, as we have no way of detecting M/D/YYYY when day part is < 13
+            if ($date[1] === '/' || $date[2] === '/') {
+                $parts = explode('/', $date, 3);
+                return $parts[2] . '-' . $parts[1] . '-' . $parts[0]; // YYYY-MM-DD
+            }
+        }
+        return $date; //no-op
+    }
+
 }
