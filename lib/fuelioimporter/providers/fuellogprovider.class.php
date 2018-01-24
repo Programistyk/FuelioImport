@@ -2,6 +2,8 @@
 
 namespace FuelioImporter\Providers;
 
+use FuelioImporter\Cost;
+use FuelioImporter\CostCategory;
 use FuelioImporter\FuelioBackupBuilder;
 use FuelioImporter\FuelLogEntry;
 use FuelioImporter\IConverter;
@@ -85,6 +87,9 @@ class FuellogProvider implements IConverter
 
         // Import fillups
         $this->processFillups($in, $out);
+
+        // Import costs
+        $this->processCosts($in, $out);
 
         return $out;
     }
@@ -183,6 +188,51 @@ class FuellogProvider implements IConverter
 
             $out->writeFuelLog($entry);
         } while (!$in->eof() && strpos($data[0], '#', 0) !== 0);
+    }
+
+    protected function processCosts(\SplFileObject $in, FuelioBackupBuilder $out) {
+        // make,model,title,date,mileage,costs,note,recurrence
+        if ($in->eof()) {
+            return; // Turns out costs are optional in file, so skip if we are at its end
+        }
+
+        $header = $in->fgetcsv();
+        if ($header[0] !== 'make' || count($header) !== 8) {
+            throw new InvalidFileFormatException();
+        }
+
+        // Since FuelLog does not have cost categories, we put all costs into a fake one
+        $out->writeCostCategoriesHeader();
+        $out->writeCostCategory(new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID, 'FuelLog Import'));
+
+        // Write costs header
+        $out->writeCoststHeader();
+
+        do {
+            $data = $in->fgetcsv();
+            if (!$data) {
+                continue;
+            }
+
+            // Skip data for car not selected
+            $data_key = $data[0].'.'.$data[1];
+            if ($data_key !== $this->vehicle_key) {
+                continue;
+            }
+
+            $cost = new Cost();
+            $cost->setCost((double)$data[5]);
+            $cost->setCostCategoryId(FuelioBackupBuilder::SAFE_CATEGORY_ID);
+            $cost->setDate($this->normalizeDate($data[3]));
+            $cost->setTitle(trim($data[2]));
+            $cost->setNotes(trim($data[6]));
+            $cost->setOdo($data[4]);
+            $cost->setReminderDate($this->convertCostReminder($this->normalizeDate($data[3]), $data[7]));
+            $cost->setRepeatMonths($this->convertRepeatMonths($data[7]));
+            $out->writeCost($cost);
+
+        } while (!$in->eof() && strpos($data[0], '#', 0) !== 0);
+
     }
 
     /**
@@ -307,6 +357,57 @@ class FuellogProvider implements IConverter
 //             47 = gge/h
 //             48 = h/gge
             default: throw new InvalidUnitException('Selected fuel consumption unit is not supported.');
+        }
+    }
+
+    /**
+     * Returns cost date moved according to recurrence type
+     * @param $sDate string current cost date
+     * @param $raw_recurrence string
+     * @return null|string New reminders date
+     * @throws InvalidUnitException
+     */
+    protected function convertCostReminder($sDate, $raw_recurrence)
+    {
+        /* Based on FuelLog's explanations.txt */
+
+        if (empty($sDate)) {
+            return Cost::EMPTY_DATE;
+        }
+        $new_date = new \DateTime($sDate);
+
+        switch((int)$raw_recurrence) {
+            case 0 : return Cost::EMPTY_DATE; // One-time
+            case 1 : $step = 'P1D'; break; // Daily cost
+            case 2 : $step = 'P1W'; break; // Weekly cost
+            case 3 : $step = 'P1M'; break; // Monthly cost
+            case 4 : $step = 'P2M'; break; // Bimonthly cost
+            case 5 : $step = 'P1Y'; break; // Yearly cost
+            case 6 : $step = 'P3M'; break; // Quarterly cost
+            case 7 : $step = 'P6M'; break; // Half-yearly cost
+            case 8 : $step = 'P2Y'; break; // Every two years cost
+            default: throw new InvalidUnitException('Invalid cost recurrence type.');
+        }
+
+        $new_date->modify($step);
+        return $new_date->format('Y-m-d');
+    }
+
+    /**
+     * Returns number of months of recurrence
+     * @param $raw_recurrence string
+     * @return int Number of recurrence months
+     */
+    protected function convertRepeatMonths($raw_recurrence)
+    {
+        switch((int)$raw_recurrence) {
+            case 3 : return 1;
+            case 4 : return 2;
+            case 5 : return 12;
+            case 6 : return 3;
+            case 7 : return 6;
+            case 8 : return 24;
+            default: return 0; // By default there is no monthly repetition
         }
     }
 }
