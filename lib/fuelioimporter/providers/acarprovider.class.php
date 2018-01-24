@@ -342,6 +342,7 @@ class AcarProvider implements IConverter {
             $notes = (string) $record->{'fuel-brand'} . ' ' . (string) $record->{'fueling-station-address'} . ' ' . (string) $record->notes;
             $entry->setNotes(trim($notes));
             $entry->setMissedEntries(0);
+            $entry->setFuelType($this->getFuelType((string)$record->{'fuel-type-id'}));
             $out->writeFuelLog($entry);
         }
     }
