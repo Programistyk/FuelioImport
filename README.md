@@ -23,7 +23,7 @@ aCar format support only Litres as Fuel Unit and l/100km as Consumption Unit.
 It is possible to import aCar backups with US Gallons, but it hasn't tested and results may be unexpected. 
 
 Due to limited documentation and access to Fuel Log dumps, only Litres as Fuel Unit, l/100km as Consumption Unit and Kilometers as Dinstance unit were tested.
-After importing into Fuelio, remember to verify or set your car's fuel type! FuelLog does not support that information at all.
+After importing into Fuelio, remember to verify or set your cars fuel type! FuelLog does not support that information at all.
 
 ## Requirements
 FuelioImport converter is built for current PHP version (PHP7), but any stable PHP version should do the job.

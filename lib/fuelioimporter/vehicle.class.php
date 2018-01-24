@@ -2,12 +2,10 @@
 
 namespace FuelioImporter;
 
-use FuelioImporter\IBackupEntry;
-
 /**
  * Fuelio Vehicle data
  * @author Kamil Kamiński
- * @version 20150727
+ * @version 20180124
  */
 class Vehicle implements IBackupEntry {
 
@@ -72,13 +70,25 @@ class Vehicle implements IBackupEntry {
     /** @var string Vehicle production year */
     protected $year;
 
+    /** @var int Number of fuel tanks */
+    protected $tank_count = 1;
+
+    /** @var int Type of fuel */
+    protected $tank_1_type;
+
+    /** @var int Type of fuel */
+    protected $tank_2_type;
+
+    /** @var int Flag vehicle is active in app */
+    protected $active = 1;
+
     /**
      * Default constructor
      * @param string $sName Car name
      * @param string $sDescription Car description
      * @param integer $iDistance_unit Distance unit constant
      * @param integer $iFuel_unit Fuel unit constant
-     * @param integer $iConsumption_unit Consuption unit constant
+     * @param integer $iConsumption_unit Consumption unit constant
      */
     public function __construct($sName, $sDescription, $iDistance_unit = Vehicle::KILOMETERS, $iFuel_unit = Vehicle::LITRES, $iConsumption_unit = Vehicle::L_PER_100KM) {
         $this->setName($sName);
@@ -130,6 +140,23 @@ class Vehicle implements IBackupEntry {
 
     public function setYear($iYear) {
         $this->year = intval($iYear);
+    }
+
+    public function setTankCount($nTankCount) {
+        $this->tank_count = (int)$nTankCount;
+    }
+
+    public function setTankType($nIdx, $nType) {
+        $idx = (int)$nIdx;
+        if ($idx !== 1 && $idx !== 2) {
+            return; //no-op, only two tanks storable
+        }
+
+        $this->{'tank_'.$idx.'_type'} = (int)$nType;
+    }
+
+    public function setActive($bActive) {
+        $this->active = (int)(bool)$bActive;
     }
 
     public function getData() {

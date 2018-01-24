@@ -24,8 +24,8 @@ class FuelioBackupBuilder extends \SplTempFileObject {
      */
     public function writeVehicleHeader()
     {
-        $this->fwrite("## Vehicle,,,,,,,,,,,\n");
-        $this->fputcsv(array('Name','Description','DistUnit','FuelUnit','ConsumptionUnit','ImportCSVDateFormat', 'VIN', 'Insurance', 'Plate', 'Make', 'Model', 'Year'));
+        $this->fwrite("## Vehicle,,,,,,,,,,,,,,\n");
+        $this->fputcsv(array('Name','Description','DistUnit','FuelUnit','ConsumptionUnit','ImportCSVDateFormat', 'VIN', 'Insurance', 'Plate', 'Make', 'Model', 'Year', 'TankCount', 'Tank1Type', 'Tank2Type', 'Active'));
     }
     
     /**
