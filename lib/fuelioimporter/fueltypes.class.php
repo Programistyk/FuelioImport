@@ -25,8 +25,8 @@ class FuelTypes {
     {
         $root = (int)$root;
         $element = array('name' => trim($name), 'active' => (int)(bool)$active, 'parent' => null);
-        if ($root === null && !empty($name) && !empty($id) && ($root%100 === 0) ) {
-            $this->list[$root] = $element;
+        if (empty($root) && !empty($name) && !empty($id) && ($root%100 === 0) ) {
+            $this->list[(int)$id] = $element;
             return;
         }
 
@@ -81,7 +81,7 @@ class FuelTypes {
         while(!feof($fh)) {
             $line = fgetcsv($fh);
             $root = trim($line[1]);
-            $list->addType($root === '<null>' ? null : $root, $line[1], $line[2], $line[3]);
+            $list->addType($root === '<null>' ? null : $root, $line[0], $line[2], $line[3]);
 
         }
 

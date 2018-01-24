@@ -148,7 +148,7 @@ class Vehicle implements IBackupEntry {
 
     public function setTankType($nIdx, $nType) {
         $idx = (int)$nIdx;
-        if ($idx !== 1 && $idx !== 2) {
+        if (($idx !== 1 && $idx !== 2) || $nType === null) {
             return; //no-op, only two tanks storable
         }
 

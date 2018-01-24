@@ -3,9 +3,11 @@
 namespace FuelioImporter\Providers;
 
 use FuelioImporter\Form\FormValidatorException;
+use FuelioImporter\FuelTypes;
 use FuelioImporter\IConverter;
 use FuelioImporter\FuelioBackupBuilder;
 use FuelioImporter\InvalidFileFormatException;
+use FuelioImporter\InvalidUnitException;
 use FuelioImporter\Vehicle;
 use FuelioImporter\FuelLogEntry;
 use FuelioImporter\CostCategory;
@@ -31,6 +33,10 @@ class AcarProvider implements IConverter {
     protected $services = array();
     // Vehicle number provided by form
     protected $selected_vehicle = 1;
+    // Fuel types declared in aCar backup
+    protected $acar_fuels = array();
+    /** @var FuelTypes|null */
+    protected $fuel_types;
 
     // @see IConverter
     public function getName() {
@@ -83,6 +89,7 @@ class AcarProvider implements IConverter {
 
         $this->readPreferences($in, $out);
 
+        $this->processFuelTypes($in);
 
         // Read vehicle data
         $this->selected_vehicle = intval($form_data['vehicle_id'], 10);
@@ -178,6 +185,7 @@ class AcarProvider implements IConverter {
      * @param SimpleXMLElement $data vehicle node
      * @param ZipArchive $in Input archive
      * @param FuelioBackupBuilder $out Output file
+     * @throws InvalidUnitException
      */
     public function processVehicle(SimpleXMLElement $data, ZipArchive $in, FuelioBackupBuilder $out) {
         $out->writeVehicleHeader();
@@ -194,6 +202,9 @@ class AcarProvider implements IConverter {
         $vehicle->setFuelUnit($this->getFuelUnit($data));
         $vehicle->setDistanceUnit($this->getDistanceUnit($data));
         $vehicle->setConsumptionUnit($this->getConsumptionUnit());
+
+        // Little hack, let's extract first mappable fuel type
+        $vehicle->setTankType(1, $this->determineVehicleFuelType($data));
 
         $out->writeVehicle($vehicle);
     }
@@ -619,6 +630,78 @@ class AcarProvider implements IConverter {
                 }
             }
         }
+    }
+
+    protected function processFuelTypes(ZipArchive $in) {
+        if ($in->statName('fuel-types.xml') !== false) {
+            $this->readFuelTypes(new \SimpleXMLElement(stream_get_contents($in->getStream('fuel-types.xml'))));
+        } else {
+            $this->fuel_types = null;
+        }
+    }
+
+    protected function readFuelTypes(SimpleXMLElement $root_node) {
+        $this->acar_fuels = array();
+        foreach ($root_node->{'fuel-type'} as $node) {
+            $atts = $node->attributes();
+            $id = (int)(string)$atts['id'];
+
+            $element = array(
+                'name' => (string)$node->name,
+                'category' => (string)$node->category
+            );
+
+            $this->acar_fuels[$id] = $element;
+        }
+        $this->fuel_types = FuelTypes::getTypes();
+    }
+
+    protected function getFuelType($iAcarFuelType) {
+
+        if (!$this->fuel_types) {
+            return null;
+        }
+
+        if (!isset($this->acar_fuels[$iAcarFuelType])) {
+            return null;
+        }
+
+
+        // Normalize fuel name
+        $name = $this->acar_fuels[$iAcarFuelType]['name'];
+
+        switch ($name) {
+            case 'Autogas/LPG' : $name = 'LPG/GPL'; break;
+            case 'CNG - Methane': $name = 'CNG'; break;
+            case 'GPL': $name = 'GPL/LPG'; break;
+        }
+
+        $fuelio_type = $this->fuel_types->findIdByName($name);
+        if ($fuelio_type === -1) {
+            // Not found, lets assign generic category
+            switch($this->acar_fuels[$iAcarFuelType]['category']) {
+                case 'gasoline' : return FuelTypes::FUEL_ROOT_GASOLINE;
+                case 'diesel' : return FuelTypes::FUEL_ROOT_DIESEL;
+                case 'bioalcohol': return FuelTypes::FUEL_ROOT_ETHANOL;
+                case 'gas': return FuelTypes::FUEL_ROOT_LPG;
+            }
+        }
+
+        return $fuelio_type !== -1 ? $fuelio_type : null;
+    }
+
+    protected function determineVehicleFuelType(SimpleXMLElement $vehicle)
+    {
+        foreach ($vehicle->{'fillup-records'}->{'fillup-record'} as $fillup) {
+            $sFuelType = (string)$fillup->{'fuel-type-id'};
+
+            $got_type = $this->getFuelType((int)$sFuelType);
+
+            if ($got_type) {
+                return $got_type;
+            }
+        }
+        return null;
     }
 
 }
