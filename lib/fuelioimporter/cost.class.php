@@ -10,6 +10,8 @@ use FuelioImporter\FuelioBackupBuilder;
  */
 class Cost implements IBackupEntry
 {
+    const EMPTY_DATE = '2011-01-01';
+
     /** @var string Cost title */
     protected $title;
     /** @var \DateTime Timestamp */
@@ -34,6 +36,14 @@ class Cost implements IBackupEntry
     protected $remindDate = '2011-01-01';
     /** @var integer 0|1 Flags cost as template */
     protected $tpl = 0;
+    /** @var integer Repeat cost at specific ODO threshold */
+    protected $repeat_odo = 0;
+    /** @var integer Repeat cost after specific months */
+    protected $repeat_months = 0;
+    /** @var integer Flags as "is income" */
+    protected $is_income = 0;
+    /** @var integer Unique cost id */
+    protected $unique_id;
     
     public function setTitle($sTitle)
     {
@@ -66,6 +76,7 @@ class Cost implements IBackupEntry
     public function setCost($dCost)
     {
         $this->cost = $dCost;
+        $this->setIsIncome($dCost<0);
     }
     
     public function setFlag($flag)
@@ -92,6 +103,31 @@ class Cost implements IBackupEntry
     {
         $dt = new \DateTime($sDate);
         $this->remindDate = $dt->format(FuelioBackupBuilder::DATE_FORMAT);
+    }
+
+    public function setRepeatOdo($iOdo)
+    {
+        $this->repeat_odo = (int)$iOdo;
+    }
+
+    public function setRepeatMonths($sMonths)
+    {
+        $this->repeat_months = (int)$sMonths;
+    }
+
+    public function setIsIncome($bIsIncome)
+    {
+        $this->is_income = (int)(bool)$bIsIncome;
+    }
+
+    public function setUniqueId($iUniqueId)
+    {
+        $this->unique_id = (int)$iUniqueId;
+    }
+
+    public function getCostDate()
+    {
+        return $this->date;
     }
     
     public function getData() {

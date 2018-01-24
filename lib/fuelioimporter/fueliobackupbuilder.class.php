@@ -9,6 +9,7 @@ namespace FuelioImporter;
  *
  * @brief Backup file generator
  * @author Kamil Kamiński
+ * @version 20180124
  * 
  */
 class FuelioBackupBuilder extends \SplTempFileObject {
@@ -68,8 +69,8 @@ class FuelioBackupBuilder extends \SplTempFileObject {
      */
     public function writeCoststHeader()
     {
-        $this->fwrite("## Costs,,,,,,,,,,,\n");
-        $this->fputcsv(array('CostTitle', 'Date', 'Odo', 'CostTypeID', 'Notes', 'Cost', 'flag', 'idR', 'read', 'RemindOdo', 'RemindDate'));
+        $this->fwrite("## Costs,,,,,,,,,,,,,,,\n");
+        $this->fputcsv(array('CostTitle', 'Date', 'Odo', 'CostTypeID', 'Notes', 'Cost', 'flag', 'idR', 'read', 'RemindOdo', 'RemindDate', 'isTemplate', 'RepeatOdo', 'RepeatMonths', 'isIncome', 'UniqueId'));
     }
     
     /**
