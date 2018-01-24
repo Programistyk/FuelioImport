@@ -42,8 +42,8 @@ class FuelioBackupBuilder extends \SplTempFileObject {
      */
     public function writeFuelLogHeader()
     {
-        $this->fwrite("## Log,,,,,,,,,,,\n");
-        $this->fputcsv(array('Data','Odo(km)','Fuel(litres)','Full','Price(optional)','l/100km(optional)','latitude(optional)','longitude(optional)','City(optional)','Notes(optional)','Missed'));
+        $this->fwrite("## Log,,,,,,,,,,,,,\n");
+        $this->fputcsv(array('Data','Odo(km)','Fuel(litres)','Full','Price(optional)','l/100km(optional)','latitude(optional)','longitude(optional)','City(optional)','Notes(optional)','Missed', 'TankNumber', 'FuelType', 'VolumePrice'));
     }
     
     /**

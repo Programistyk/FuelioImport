@@ -8,6 +8,7 @@ use FuelioImporter\FuelioBackupBuilder;
 /**
  * Fuel log model
  * @author Kamil Kamiński
+ * @version 20180124
  */
 class FuelLogEntry implements IBackupEntry {
     /** @var string Fueling timestamp, valid for \DateTime constructor */
@@ -32,6 +33,12 @@ class FuelLogEntry implements IBackupEntry {
     protected $notes;
     /** @var integer 0|1 Determines if there are missing fueling before this entry in database */
     protected $missed_entries = 0;
+    /** @var int Tank number */
+    protected $tank_number = 1;
+    /** @var int Tank number as id from FuelType */
+    protected $fuel_type;
+    /** @var double Volume price*/
+    protected $volume_price;
 
     public function setDate($sDatetime) {
         $dt = new \DateTime($sDatetime);
@@ -39,7 +46,7 @@ class FuelLogEntry implements IBackupEntry {
     }
 
     public function setOdo($iOdo) {
-        $this->odo = intval($iOdo);
+        $this->odo = (int)$iOdo;
     }
 
     public function setFuel($dFuel) {
@@ -48,7 +55,7 @@ class FuelLogEntry implements IBackupEntry {
 
     public function setFullFillup($bFull) {
         // force integer form of forced boolean :)
-        $this->full_fillup = intval($bFull == true);
+        $this->full_fillup = (int)(bool)$bFull;
     }
 
     public function setPrice($dPrice) {
@@ -80,6 +87,18 @@ class FuelLogEntry implements IBackupEntry {
     
     public function setMissedEntries($iMissed) {
         $this->missed_entries = $iMissed;
+    }
+
+    public function setTankNumber($nTankNumber) {
+        $this->tank_number = (int)$nTankNumber;
+    }
+
+    public function setFuelType($nFuelType) {
+        $this->fuel_type = (int)$nFuelType;
+    }
+
+    public function setVolumePrice($dVolumePrice) {
+        $this->volume_price = (double)$dVolumePrice;
     }
 
     public function getData() {
