@@ -182,7 +182,7 @@ class FuellogProvider implements IConverter
             $entry->setDate($this->normalizeDate($data[2]));
             $entry->setOdo((double)$data[3]);
             $entry->setFuel((double)$data[4]);
-            $entry->setPrice((double)$data[5]);
+            $entry->setVolumePrice((double)$data[5]);
             $entry->setFullFillup($data[6] !== '1');
             $entry->setNotes($data[7]);
 
