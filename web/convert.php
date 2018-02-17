@@ -41,7 +41,7 @@ try {
         header('Content-Type: text/plain, charset=UTF-8');
     else {*/
     header('Content-Type: text/csv, charset=UTF-8');
-    header('Content-Disposition: attachment; filename="' . $fname . '"');
+    header('Content-Disposition: attachment; filename="' . filter_var($fname, FILTER_SANITIZE_URL). '"');
     //}
     $outfile->rewind();
     $outfile->fpassthru();

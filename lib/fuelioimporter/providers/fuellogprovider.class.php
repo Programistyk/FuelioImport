@@ -44,7 +44,7 @@ class FuellogProvider implements IConverter
     public function setCarName($name)
     {
         if (!empty($name)) {
-            $this->car_name = $name;
+            $this->output_filename = $name;
         }
     }
 
