@@ -18,6 +18,8 @@ class FuellogProvider implements IConverter
     protected $vehicle_key = null;
     /** @var int Vehicle index provided by user */
     protected $selected_vehicle = null;
+    /** @var string|null Output filename */
+    protected $output_filename = null;
 
     public function getName()
     {
@@ -31,7 +33,7 @@ class FuellogProvider implements IConverter
 
     public function getOutputFileName()
     {
-        return $this->getTitle();
+        return $this->output_filename ?: $this->getTitle();
     }
 
     public function getStylesheetLocation()
@@ -146,8 +148,10 @@ class FuellogProvider implements IConverter
 
         // Prepare Vehicle
         $data = $this->vehicles[$this->vehicle_key];
+        $vname = trim($data[0]) . ' ' . trim($data[1]); // Build proper name: Make + Model;
+        $this->output_filename .= $vname;
         $vehicle = new Vehicle(
-            trim($data[0] . ' ' . $data[1]), // Build proper name: Make + Model
+            $vname,
             $data[2], // Use Notes as description
             $this->getDistanceUnit($data[3]),
             $this->getVolumeUnit($data[4]),
