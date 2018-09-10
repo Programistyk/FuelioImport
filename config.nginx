@@ -1,0 +1,35 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    root /app/web;
+
+    client_max_body_size 20m;
+    client_body_buffer_size 128k;
+
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    location / {
+        index index.php;
+        try_files $uri $uri/ =404;
+    }
+    
+    location ~ \.php$ {
+        try_files $uri $uri/ =404;
+        fastcgi_index index.php;
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+        include fastcgi_params;
+
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+    }
+
+    location ~ /\. {
+        access_log off;
+        log_not_found off; 
+        deny all;
+    }
+
+    server_name _;
+}
