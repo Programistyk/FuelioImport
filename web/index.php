@@ -131,8 +131,8 @@ $provider = new FuelioImporter\ConverterProvider();
             <!-- Navigation -->
             <nav class="mdl-navigation">
                 <a class="mdl-navigation__link" href="https://github.com/Programistyk/FuelioImport">GitHub</a>
-                <a class="mdl-navigation__link" href="http://www.programistyk.pl"><img
-                        src="http://www.programistyk.pl/favicon-32x32.png" width="16" height="16" alt=""/> Programistyk</a>
+                <a class="mdl-navigation__link" href="https://www.programistyk.pl"><img
+                        src="https://www.programistyk.pl/favicon-32x32.png" width="16" height="16" alt=""/> Programistyk</a>
             </nav>
         </div>
     </header>
@@ -149,7 +149,7 @@ $provider = new FuelioImporter\ConverterProvider();
         </nav>
         <nav class="mdl-navigation">
         <a class="mdl-navigation__link" href="https://github.com/Programistyk/FuelioImport">GitHub</a>
-        <a class="mdl-navigation__link" href="http://www.programistyk.pl">Programistyk</a>
+        <a class="mdl-navigation__link" href="https://www.programistyk.pl">Programistyk</a>
         </nav>
     </div>
     <main class="mdl-layout__content">

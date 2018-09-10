@@ -14,7 +14,7 @@ class MotostatCard implements ICard {
     
     public function getActions() {
         return array(
-            array('Motostat', 'popup', 'http://www.motostat.pl/member/vehicles'),
+            array('Motostat', 'popup', 'https://www.motostat.pl/member/vehicles'),
             array('Help', 'popup', 'https://github.com/Programistyk/FuelioImport/wiki/Converters---Motostat')
         );
     }
