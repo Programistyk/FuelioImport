@@ -276,6 +276,8 @@ class AcarProvider implements IConverter {
                 return Vehicle::L_PER_100KM;
             case 'MPG (US)':
                 return Vehicle::MPG_US;
+            case 'km/L':
+                return Vehicle::KM_PER_L;
             default:
                 throw new \FuelioImporter\InvalidUnitException();
         }
