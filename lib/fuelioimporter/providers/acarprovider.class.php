@@ -216,8 +216,6 @@ class AcarProvider implements IConverter {
      * @throws \FuelioImporter\InvalidUnitException On unsupported unit
      */
     protected function getFuelUnit(SimpleXMLElement $vehicleNode) {
-        // @TODO: How does aCar mark US / UK gallons?
-
         // New aCar version stores volume unit per vehicle, not globally
         if (array_key_exists('acar.volume-unit', $this->preferences)) {
             $volume_unit = $this->preferences['acar.volume-unit'];
@@ -229,8 +227,12 @@ class AcarProvider implements IConverter {
             case 'L':
             case 'liter':
                 return Vehicle::LITRES;
+            case 'us_gallon':
             case 'gal (US)':
                 return Vehicle::GALLONS_US;
+            case 'uk_gallon':
+            case 'gallon': // TODO: Can anybody confirm this?
+            case 'gal (UK)': return Vehicle::GALLONS_UK;
             default:
                 throw new \FuelioImporter\InvalidUnitException();
         }
@@ -252,7 +254,7 @@ class AcarProvider implements IConverter {
         switch ($distance_unit) {
             case 'm':
             case 'mi' :
-            case 'mile' : // @todo: Can anybody confirm this?
+            case 'mile' :
                 return Vehicle::MILES;
             case 'km':
             case 'kilometer':
@@ -274,6 +276,8 @@ class AcarProvider implements IConverter {
 
             case 'L/100km':
                 return Vehicle::L_PER_100KM;
+            case 'MPG (UK)': // TODO: To Confirm
+                return Vehicle::MPG_UK;
             case 'MPG (US)':
                 return Vehicle::MPG_US;
             case 'km/L':
