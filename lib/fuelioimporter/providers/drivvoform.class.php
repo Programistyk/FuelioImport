@@ -9,7 +9,9 @@ class DrivvoForm extends BaseForm {
 
     public function __construct()
     {
-        $this[] = new MDLNumericField('vehicle_id', array('min' => 1, 'label' => 'Export vehicle #', 'value' => 1));
+        $this[] = new MDLNumericField('dist_unit', array('min' => 0, 'label' => 'Distance Unit #', 'value' => 0));
+        $this[] = new MDLNumericField('fuel_unit', array('min' => 0, 'label' => 'Fuel Unit #', 'value' => 0));
+
     }
 
     public function getName()

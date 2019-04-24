@@ -20,6 +20,10 @@ class DrivvoProvider implements IConverter
     protected $selected_vehicle = null;
     /** @var string|null Output filename */
     protected $output_filename = null;
+    /** @var int distance unit */
+    protected $dist_unit = 0;
+  /** @var int fuel unit */
+    protected $fuel_unit = 0;
 
     public function getName()
     {
@@ -69,6 +73,9 @@ class DrivvoProvider implements IConverter
             throw new InvalidFileFormatException();
         }
 
+        $this->dist_unit = $form_data['dist_unit'];
+        $this->fuel_unit = $form_data['fuel_unit'];
+
         // Configure reader
         $in->setFlags(\SplFileObject::SKIP_EMPTY | \SplFileObject::DROP_NEW_LINE);
 
@@ -103,7 +110,6 @@ class DrivvoProvider implements IConverter
      */
     protected function processVehicles(\SplFileObject $in, FuelioBackupBuilder $out)
     {
-        // "make","model","note","distance","volume","consumption"
         $header = $in->fgetcsv();
 
         // Write out selected vehicle
@@ -112,15 +118,15 @@ class DrivvoProvider implements IConverter
         // Prepare Vehicle
         $data = $this->vehicles[$this->vehicle_key];
         //$vname = trim($data[0]) . ' ' . trim($data[1]); // Build proper name: Make + Model;
-        $vname = "DrivvoCar";
+        $vname = "Drivvo Car";
         $this->output_filename .= $vname;
         $description="Imported";
         
         $vehicle = new Vehicle(
             $vname,
             $description, // Use Notes as description
-            0,
-            0,
+            $this->dist_unit,
+            $this->fuel_unit,
             0
         );
         //$vehicle->setCsvDateFormat("yyyy-MM-dd");
@@ -129,7 +135,6 @@ class DrivvoProvider implements IConverter
 
     protected function processFillups(\SplFileObject $in, FuelioBackupBuilder $out)
     {
-        // "make","model","date","mileage","fuel","price","partial","note"
         $header = $in->fgetcsv();
         if ((count($header)>0 && count($header) < 8)) {
             throw new InvalidFileFormatException();
