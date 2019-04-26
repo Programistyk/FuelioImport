@@ -11,6 +11,7 @@ Supported formats are:
  * Motostat (.csv)
  * aCar full backup (.abp) (with geolocation!)
  * Fuel Log (.csv)
+ * Drivvo (.csv) - thanks @adek!
 
 ## Limitations
 Current versions of Fuelio app keep cost categories car-independent. If you have entered non-standard categories, Fuelio will assign imported costs to them,
@@ -24,6 +25,8 @@ It is possible to import aCar backups with US Gallons, but it hasn't tested and 
 
 Due to limited documentation and access to Fuel Log dumps, only Litres as Fuel Unit, l/100km as Consumption Unit and Kilometers as Dinstance unit were tested.
 After importing into Fuelio, remember to verify or set your cars fuel type! FuelLog does not support that information at all.
+
+Drivvo backups are locale-dependant, so in order to support all of them, we need to be given more examples. Currently spanish, english and polish backups should be working fine. Others might missinterpret "refuelling to full" flag. 
 
 ## Requirements
 FuelioImport converter is built for current PHP version (PHP7), but any stable PHP version should do the job.
