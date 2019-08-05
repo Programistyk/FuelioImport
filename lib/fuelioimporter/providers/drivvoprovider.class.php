@@ -181,14 +181,16 @@ class DrivvoProvider implements IConverter
         }
 
         $header = $in->fgetcsv();
-        if (count($header)>0 && count($header)<7) {
-            throw new InvalidFileFormatException();
-        }
 
         // Since FuelLog does not have cost categories, we put all costs into a fake one
         $out->writeCostCategoriesHeader();
         $out->writeCostCategory(new CostCategory(1, 'Service'));
         $out->writeCostCategory(new CostCategory(2, 'Expense'));
+
+        if (count($header)>0 && count($header)<7) {
+            return;
+            //throw new InvalidFileFormatException();
+        }
 
         // Write costs header
         $out->writeCoststHeader();
@@ -218,7 +220,8 @@ class DrivvoProvider implements IConverter
 
         $header = $in->fgetcsv();
         if (count($header)>0 && count($header)<6) {
-            throw new InvalidFileFormatException();
+            return;
+            //throw new InvalidFileFormatException();
         }
 
         do {
