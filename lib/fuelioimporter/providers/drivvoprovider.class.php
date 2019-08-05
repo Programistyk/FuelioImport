@@ -186,14 +186,15 @@ class DrivvoProvider implements IConverter
         $out->writeCostCategoriesHeader();
         $out->writeCostCategory(new CostCategory(1, 'Service'));
         $out->writeCostCategory(new CostCategory(2, 'Expense'));
+         // Write costs header
+        $out->writeCoststHeader();
 
         if (count($header)>0 && count($header)<7) {
             return;
             //throw new InvalidFileFormatException();
         }
 
-        // Write costs header
-        $out->writeCoststHeader();
+       
         if (count($header)==7){
         do {
             $data = $in->fgetcsv();
