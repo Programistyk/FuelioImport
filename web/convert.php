@@ -14,12 +14,17 @@ try {
     if (isset($_FILES['f']) && !empty($_FILES['f']['tmp_name'])) {
         $file = &$_FILES['f'];
 
-        if ($file['error'])
+        if ($file['error'] && $file['error'] !== UPLOAD_ERR_OK) {
             throw new FuelioImporter\UploadError($file);
+        }
+
         $infile = new SplFileObject($file['tmp_name']);
     }
     else {
         // Rely on datastream
+        if (empty($_POST['datastream'])) {
+            throw new FuelioImporter\NoFileUploadedException();
+        }
         $infile = new SplFileObject('data://' . substr($_POST['datastream'],5)); // Skip data: part
     }
 
