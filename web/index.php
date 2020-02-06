@@ -38,7 +38,7 @@ $provider = new FuelioImporter\ConverterProvider();
     <meta name="msapplication-TileImage" content="/mstile-144x144.png">
     <meta name="theme-color" content="#616161">
 
-    <link href='//fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en&amp;display=swap' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue_grey-amber.min.css" />
     <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -55,7 +55,7 @@ $provider = new FuelioImporter\ConverterProvider();
     </script>
 
     <script type="text/javascript"
-            src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/1.0.9/cookieconsent.min.js"></script>
+            src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/1.0.9/cookieconsent.min.js" async></script>
     <!-- End Cookie Consent plugin -->
 
     <?php
@@ -236,8 +236,16 @@ $provider = new FuelioImporter\ConverterProvider();
 <script>
     window.onload = function () {
         var filereaderload = function () {
+            if (this.error) {
+                alert(this.error);
+                return false;
+            }
+            if ("" === this.result || this.result.indexOf(",") === -1) {
+                alert("Something went wrong, FileReader API returned no file content. Please use desktop browser, or file an issue report.");
+                return false;
+            }
             $("#datastream").val(this.result);
-            $("form.ghost").attr("action", "convert.php?converter=" + $("form input[name=c]").val()).submit();
+            $("form.ghost").attr("action", "convert.php?converter=" + $("form input[name=c]").val());//.submit();
         };
 
         var dragenter = function (e) {
@@ -276,6 +284,16 @@ $provider = new FuelioImporter\ConverterProvider();
                 process_fields();
                 var fr = new FileReader();
                 fr.onloadend = filereaderload;
+                fr.onerror = function(e) {
+                    console.error(e);
+                    alert("Upload failed due to FileReader API error: " + e.message || "Unknown error");
+                    return false;
+                };
+                if (!e.originalEvent || !e.originalEvent.dataTransfer || !e.originalEvent.dataTransfer.files || e.originalEvent.dataTransfer.files.length === 0) {
+                    console.debug(e.originalEvent);
+                    alert("Unknown error occured at FileReader API, please use desktop browser and upload via form.");
+                }
+
                 fr.readAsDataURL(e.originalEvent.dataTransfer.files[0]);
             }
             return false;
