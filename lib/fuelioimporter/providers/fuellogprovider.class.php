@@ -20,6 +20,8 @@ class FuellogProvider implements IConverter
     protected $selected_vehicle = null;
     /** @var string|null Output filename */
     protected $output_filename = null;
+    /** @var string Delimiter used in CSV parser */
+    private $delimiter = ',';
 
     public function getName()
     {
@@ -75,13 +77,13 @@ class FuellogProvider implements IConverter
         // Prepare output generator
         $out = new FuelioBackupBuilder();
 
-        $line = $in->fgetcsv();
+        $line = $in->fgetcsv($this->delimiter);
         if ($line[0] !== '## vehicles') {
             throw new InvalidFileFormatException();
         }
 
         // Import vehicles
-        $this->selected_vehicle = intval($form_data['vehicle_id'], 10) - 1;
+        $this->selected_vehicle = (int)$form_data['vehicle_id'] - 1;
         if ($this->selected_vehicle < 0) {
             $this->selected_vehicle = null; // Autoselect
         }
@@ -96,6 +98,21 @@ class FuellogProvider implements IConverter
         return $out;
     }
 
+    protected function detectDelimiter(\SplFileObject $in)
+    {
+        $pos  = $in->ftell();
+        $line = $in->fgetcsv($this->delimiter);
+        if ($line[0] !== 'make') {
+            $this->delimiter = ';';
+            $in->fseek($pos);
+            $line = $in->fgetcsv($this->delimiter);
+            if ($line[0] !== 'make') {
+                throw new InvalidFileFormatException();
+            }
+        }
+        $in->fseek($pos);
+    }
+
     /**
      * Reads vehicles from Fuel Log's export
      * @param \SplFileObject $in
@@ -106,12 +123,14 @@ class FuellogProvider implements IConverter
     protected function processVehicles(\SplFileObject $in, FuelioBackupBuilder $out)
     {
         // "make","model","note","distance","volume","consumption"
-        $header = $in->fgetcsv();
+        $this->detectDelimiter($in);
+        $header = $in->fgetcsv($this->delimiter);
+
         if ($header[0] !== 'make' || count($header) < 6) {
             throw new InvalidFileFormatException();
         }
         do {
-            if (!($line = $in->fgetcsv()) || strpos($line[0], '#', 0) === 0) {
+            if (!($line = $in->fgetcsv($this->delimiter)) || strpos($line[0], '#', 0) === 0) {
                 break;
             }
             $key = $line[0] . '.' . $line[1];
@@ -163,7 +182,7 @@ class FuellogProvider implements IConverter
     protected function processFillups(\SplFileObject $in, FuelioBackupBuilder $out)
     {
         // "make","model","date","mileage","fuel","price","partial","note"
-        $header = $in->fgetcsv();
+        $header = $in->fgetcsv($this->delimiter);
         if ($header[0] !== 'make' || count($header) !== 8) {
             throw new InvalidFileFormatException();
         }
@@ -171,7 +190,7 @@ class FuellogProvider implements IConverter
         $out->writeFuelLogHeader();
 
         do {
-            $data = $in->fgetcsv();
+            $data = $in->fgetcsv($this->delimiter);
             if (!$data) {
                 continue;
             }
@@ -200,7 +219,7 @@ class FuellogProvider implements IConverter
             return; // Turns out costs are optional in file, so skip if we are at its end
         }
 
-        $header = $in->fgetcsv();
+        $header = $in->fgetcsv($this->delimiter);
         if ($header[0] !== 'make' || count($header) !== 8) {
             throw new InvalidFileFormatException();
         }
@@ -213,7 +232,7 @@ class FuellogProvider implements IConverter
         $out->writeCoststHeader();
 
         do {
-            $data = $in->fgetcsv();
+            $data = $in->fgetcsv($this->delimiter);
             if (!$data) {
                 continue;
             }
