@@ -5,7 +5,7 @@
  * @param string $class Class name
  */
 function my_autoloader($class) {
-    $file = str_replace('\\', DIRECTORY_SEPARATOR, strtolower(basename($class)));
+    $file = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($class));
     require_once($file . '.class.php');
 }
 
