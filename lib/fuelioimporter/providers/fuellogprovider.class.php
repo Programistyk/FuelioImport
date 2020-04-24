@@ -71,14 +71,19 @@ class FuellogProvider implements IConverter
             throw new InvalidFileFormatException();
         }
 
+        // Skip BOM if someone messed with Excel
+        if (array_map('ord', str_split($in->fread(3), 1)) !== [239, 187, 191]) {
+            $in->rewind();
+        }
+
         // Configure reader
         $in->setFlags(\SplFileObject::SKIP_EMPTY | \SplFileObject::DROP_NEW_LINE);
 
         // Prepare output generator
         $out = new FuelioBackupBuilder();
 
-        $line = $in->fgetcsv($this->delimiter);
-        if ($line[0] !== '## vehicles') {
+        $line = $in->fgets();
+        if (strpos($line, '## vehicles') !== 0) {
             throw new InvalidFileFormatException();
         }
 
@@ -412,7 +417,7 @@ class FuellogProvider implements IConverter
             default: throw new InvalidUnitException('Invalid cost recurrence type.');
         }
 
-        $new_date->modify($step);
+        $new_date->add(new \DateInterval($step));
         return $new_date->format('Y-m-d');
     }
 
