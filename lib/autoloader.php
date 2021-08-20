@@ -9,12 +9,8 @@ function my_autoloader($class) {
     require_once($file . '.class.php');
 }
 
-// If PHP is new enough lets behave like civilized developer
-if (function_exists('spl_autoload_register')) {
-    spl_autoload_register('my_autoloader');
-} else {
-    // Dark ancient times...
-    function __autoload($class) {
-        return my_autoloader($class);
-    }
+if (PHP_VERSION_ID < 50102) {
+    die('You are using PHP version that is too old for this code.');
 }
+
+spl_autoload_register('my_autoloader');
