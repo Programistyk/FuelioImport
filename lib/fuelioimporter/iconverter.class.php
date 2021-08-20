@@ -42,7 +42,7 @@ interface IConverter {
      * Method that processes given file returning SplTempFileObject
      * @return FuelioBackupBuilder
      */
-    public function processFile(SplFileObject $stream, $form_data);
+    public function processFile(SplFileObject $in, $form_data);
     
     /**
      * Method returns a CardInterface for visual representation
