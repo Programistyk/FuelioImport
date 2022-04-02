@@ -93,6 +93,10 @@ class DrivvoProvider implements IConverter
             throw new InvalidFileFormatException('File is not readable');
         }
 
+        if (!ini_get("auto_detect_line_endings")) {
+            ini_set("auto_detect_line_endings", '1');
+        }
+
         $this->dist_unit = $form_data['dist_unit'];
         $this->fuel_unit = $form_data['fuel_unit'];
 
@@ -102,9 +106,12 @@ class DrivvoProvider implements IConverter
         // Prepare output generator
         $out = new FuelioBackupBuilder();
 
-        $line = $in->fgetcsv();
+        // Find starting header
+        do {
+            $line = $in->fgetcsv();
+        } while (!$in->eof() && !in_array($line[0], self::VALID_HEADERS, true));
 
-        if (!in_array($line[0], self::VALID_HEADERS, true)) {
+        if ($in->eof()) {
             throw new InvalidFileFormatException('File format is not recognized.');
         }
 
