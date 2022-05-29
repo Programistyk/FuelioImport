@@ -212,10 +212,10 @@ class DrivvoProvider implements IConverter
         }
 
        
-        if (count($header)===7) {
+        if (count($header) >= 7) {
             do {
                 $data = $in->fgetcsv();
-                if ($data[0]!=='' && $data[0]>0) {
+                if ($data !== false && $data[0]!=='' && $data[0] > 0) {
                     $cost = new Cost();
                     $cost->setOdo($data[0]);
                     $cost->setDate($this->normalizeDate($data[1]));
