@@ -27,9 +27,18 @@ class DrivvoProvider implements IConverter
     /** @var array list of warnings */
     protected $warnings = [];
 
-    const VALID_HEADERS = [
+    const FUELLING_HEADERS = [
         '##Refuelling',
         '#Reabastecimiento'
+    ];
+
+    const SERVICE_HEADERS = [
+        '##Service',
+        '#Servicio'
+    ];
+
+    const EXPENSE_HEADERS = [
+        '##Expense',
     ];
 
     const TRUTHY = [
@@ -107,9 +116,7 @@ class DrivvoProvider implements IConverter
         $out = new FuelioBackupBuilder();
 
         // Find starting header
-        do {
-            $line = $in->fgetcsv();
-        } while (!$in->eof() && !in_array($line[0], self::VALID_HEADERS, true));
+        $this->rewindToHeader($in, self::FUELLING_HEADERS);
 
         if ($in->eof()) {
             throw new InvalidFileFormatException('File format is not recognized.');
@@ -119,6 +126,14 @@ class DrivvoProvider implements IConverter
 
         // Import fillups
         $this->processFillups($in, $out);
+
+        // Since FuelLog does not have cost categories, we put all costs into a fake one
+        $out->writeCostCategoriesHeader();
+        $out->writeCostCategory(new CostCategory(1, 'Service'));
+        $out->writeCostCategory(new CostCategory(2, 'Expense'));
+
+        // Write costs header
+        $out->writeCoststHeader();
 
         // Import Expense
         $this->processExpense($in, $out);
@@ -136,8 +151,6 @@ class DrivvoProvider implements IConverter
      */
     protected function processVehicles(SplFileObject $in, FuelioBackupBuilder $out)
     {
-        $in->fgetcsv();
-
         // Write out selected vehicle
         $out->writeVehicleHeader();
 
@@ -158,8 +171,13 @@ class DrivvoProvider implements IConverter
 
     protected function processFillups(SplFileObject $in, FuelioBackupBuilder $out)
     {
+        $this->rewindToHeader($in, self::FUELLING_HEADERS);
+        if ($in->eof()) {
+            throw new InvalidFileFormatException();
+        }
+
         $header = $in->fgetcsv();
-        if (count($header) < 8) {
+        if (!$header || count($header) < 8) {
             throw new InvalidFileFormatException();
         }
 
@@ -167,83 +185,76 @@ class DrivvoProvider implements IConverter
 
         do {
             $data = $in->fgetcsv();
-            if ($data[0]!=='' && $data[0]>0) {
-            $entry = new FuelLogEntry();
-            $entry->setDate($this->normalizeDate($data[1]));
-            $entry->setOdo((double)$data[0]);
-            $entry->setFuel((double)$data[5]);
-            $entry->setVolumePrice((double)$data[3]);
+            if ($data && $data[0] !== '' && $data[0] > 0) {
+                $entry = new FuelLogEntry();
+                $entry->setDate($this->normalizeDate($data[1]));
+                $entry->setOdo((double)$data[0]);
+                $entry->setFuel((double)$data[5]);
+                $entry->setVolumePrice((double)$data[3]);
 
-            //Full fillup
-            //In drivvo this is translated phrase - yes/no, si, no etc...
-            //Saved in column $data[6]
-            $fullfillup = $data[6];
-            $ifull = (int)in_array($fullfillup, self::TRUTHY, true);
+                //Full fillup
+                //In drivvo this is translated phrase - yes/no, si, no etc...
+                //Saved in column $data[6]
+                $fullfillup = $data[6];
+                $ifull = (int)in_array($fullfillup, self::TRUTHY, true);
 
-            $entry->setFullFillup($ifull);
+                $entry->setFullFillup($ifull);
 
-            $entry->setPrice($data[4]);
-            $entry->setNotes($data[18]);
+                $entry->setPrice($data[4]);
+                $entry->setNotes($data[18]);
 
-            $out->writeFuelLog($entry);
-        }
+                $out->writeFuelLog($entry);
+            }
 
         } while (!$in->eof() && strpos($data[0], '#', 0) !== 0);
     }
 
     protected function processExpense(SplFileObject $in, FuelioBackupBuilder $out) {
         // make,model,title,date,mileage,costs,note,recurrence
+        $this->rewindToHeader($in, self::EXPENSE_HEADERS);
         if ($in->eof()) {
             return; // Turns out costs are optional in file, so skip if we are at its end
         }
 
         $header = $in->fgetcsv();
-
-        // Since FuelLog does not have cost categories, we put all costs into a fake one
-        $out->writeCostCategoriesHeader();
-        $out->writeCostCategory(new CostCategory(1, 'Service'));
-        $out->writeCostCategory(new CostCategory(2, 'Expense'));
-         // Write costs header
-        $out->writeCoststHeader();
 
         if (count($header) < 7) {
             $this->warnings[] = 'Skipping expenses as the header is not recognized.';
             return;
         }
 
-       
-        if (count($header) >= 7) {
-            do {
-                $data = $in->fgetcsv();
-                if ($data !== false && $data[0]!=='' && $data[0] > 0) {
-                    $cost = new Cost();
-                    $cost->setOdo($data[0]);
-                    $cost->setDate($this->normalizeDate($data[1]));
-                    $cost->setCost((double)$data[2]);
-                    $cost->setCostCategoryId(2);
-                    $cost->setTitle(trim($data[3]));
-                    $cost->setNotes(trim($data[6]));
-                    $out->writeCost($cost);
-                }
-            } while (!$in->eof() && strpos($data[0], '#', 0) !== 0);
-        }
+        do {
+            $data = $in->fgetcsv();
+            if ($data !== false && $data[0]!=='' && $data[0] > 0) {
+                $cost = new Cost();
+                $cost->setOdo($data[0]);
+                $cost->setDate($this->normalizeDate($data[1]));
+                $cost->setCost((double)$data[2]);
+                $cost->setCostCategoryId(2);
+                $cost->setTitle(trim($data[3]));
+                $cost->setNotes(trim($data[6]));
+                $out->writeCost($cost);
+            }
+        } while (!$in->eof() && strpos($data[0], '#', 0) !== 0);
     }
 
     protected function processService(SplFileObject $in, FuelioBackupBuilder $out) {
         // make,model,title,date,mileage,costs,note,recurrence
+
+        $this->rewindToHeader($in, self::SERVICE_HEADERS);
         if ($in->eof()) {
             return; // Turns out costs are optional in file, so skip if we are at its end
         }
-
         $header = $in->fgetcsv();
-        if (count($header) < 6) {
+
+        if (!$header || count($header) < 6) {
             $this->warnings[] = 'Ignoring services  as the header is not recognized.';
             return;
         }
 
         do {
             $data = $in->fgetcsv();
-            if ($data[0] !== '' && $data[0] > 0 && count($header)===6) {
+            if ($data && $data[0] !== '' && $data[0] > 0 && count($header) === 6) {
                 $cost = new Cost();
                 $cost->setOdo($data[0]);
                 $cost->setDate($this->normalizeDate($data[1]));
@@ -264,7 +275,7 @@ class DrivvoProvider implements IConverter
      *
      * Currently it only detects dd/mm/YYYY format and turns it into YYYY-MM-DD
      */
-    protected function normalizeDate($date)
+    protected function normalizeDate($date): string
     {
         // Let's assume date could be written as X/Y/ZZZZ
         // Let's assume it's written with '/' as separator
@@ -274,5 +285,13 @@ class DrivvoProvider implements IConverter
             return $parts[2] . '-' . $parts[1] . '-' . $parts[0]; // YYYY-MM-DD
         }
         return $date; //no-op
+    }
+
+    protected function rewindToHeader(SplFileObject $file, array $headers)
+    {
+        $file->rewind();
+        do {
+            $line = $file->fgetcsv();
+        } while (!$file->eof() && !in_array($line[0], $headers, true));
     }
 }
