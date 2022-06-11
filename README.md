@@ -1,5 +1,5 @@
 # FuelioImport
-Data converter for importingo into great Fuelio app. Currently very limited (but working) GUI is available for PHP 5 built-int webserver.
+Data converter for importingo into great Fuelio app. Currently very limited (but working) GUI is available for PHP built-int webserver.
 
 FuelioImport is developed from the need to move personal fillups history from Motostat and aCar, but it is designed to offer ease of extension for new formats.
 
@@ -29,6 +29,6 @@ After importing into Fuelio, remember to verify or set your cars fuel type! Fuel
 Drivvo backups are locale-dependant, so in order to support all of them, we need to be given more examples. Currently spanish, english and polish backups should be working fine. Others might missinterpret "refuelling to full" flag. 
 
 ## Requirements
-FuelioImport converter is built for current PHP version (PHP7), but any stable PHP version should do the job.
+FuelioImport converter is built for PHP version 7.4.
 
  * For aCar backup we need SimpleXMLElement and Zip support

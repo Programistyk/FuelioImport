@@ -1,7 +1,9 @@
 <?php
-require_once 'bootstrap.php';
+require_once __DIR__ . '/bootstrap.php';
 
-$provider = new FuelioImporter\ConverterProvider();
+use FuelioImporter\ConverterProvider;
+
+$provider = new ConverterProvider();
 ?>
 <!doctype html >
 <html lang="en">
@@ -59,7 +61,7 @@ $provider = new FuelioImporter\ConverterProvider();
     <!-- End Cookie Consent plugin -->
 
     <?php
-    /** @var \FuelioImporter\IConverter $converter */
+    /** @var \FuelioImporter\ProviderInterface $converter */
     foreach ($provider as $converter) {
         if (!empty($converter->getStylesheetLocation())) {
             ?>
@@ -230,7 +232,7 @@ $provider = new FuelioImporter\ConverterProvider();
         <div class="mdl-grid"></div>
     </main>
 </div>
-<?php @include '../view/analytics.html' ?>
+<?php include __DIR__ . '/../view/_append_analytics.php' ?>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script>
