@@ -11,7 +11,7 @@ namespace FuelioImporter;
  */
 class ProviderNotExistsException extends \RuntimeException
 {
-    public function __construct($message = 'No such provider exists.', $code = null, $previous = null) {
+    public function __construct(string $message = 'No such provider exists.', int $code = 0, ?\Throwable $previous = null) {
         parent::__construct($message, $code, $previous);
     }
 }

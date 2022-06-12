@@ -8,7 +8,7 @@ use FuelioImporter\Form\AcarForm;
 use FuelioImporter\Form\FormInterface;
 use FuelioImporter\CardInterface;
 
-class AcarCardInterface implements CardInterface
+class AcarCard implements CardInterface
 {
     public function getClass(): string
     {
@@ -27,7 +27,6 @@ class AcarCardInterface implements CardInterface
     
     public function getActions(): array
     {
-        // @todo: One day maybe we will use a proper class
         return [
             ['Help', 'popup', 'https://github.com/Programistyk/FuelioImport/wiki/Converters---aCar']
         ];

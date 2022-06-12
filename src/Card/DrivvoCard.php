@@ -5,7 +5,7 @@ use FuelioImporter\Form\DrivvoForm;
 use FuelioImporter\Form\FormInterface;
 use FuelioImporter\CardInterface;
 
-class DrivvoCardInterface implements CardInterface
+class DrivvoCard implements CardInterface
 {
     public function getClass(): string
     {

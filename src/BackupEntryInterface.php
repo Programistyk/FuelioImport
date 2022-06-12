@@ -11,6 +11,7 @@ namespace FuelioImporter;
 interface BackupEntryInterface {
     /**
      * Returns array for fputcsv
+     * @return array<null|int|string|float>
      */
     public function getData(): array;
 }

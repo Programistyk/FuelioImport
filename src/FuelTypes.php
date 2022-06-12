@@ -8,7 +8,7 @@ namespace FuelioImporter;
  * Fuel types database
  * @author Kamil Kamiński
  * @version 20180124
- * @psalm-type TypeEntry array{name: string, active: int, parent: null|array}
+ * @psalm-type TypeEntry array{name: string, active: int, parent: null|mixed}
  */
 class FuelTypes {
     public const FUEL_ROOT_GASOLINE = 100;
@@ -19,13 +19,10 @@ class FuelTypes {
     public const FUEL_ROOT_ELECTRICITY = 600;
     public const FUEL_ROOT_FLEX = 700;
 
-    /** @var array<int, TypeEntry> */
-    protected array $list;
-
-    public function __construct()
-    {
-        $this->list = array();
-    }
+    /**
+     * @psalm-var array<int, TypeEntry>
+     */
+    protected array $list = [];
 
     public function addType(?int $root, int $id, string $name, bool $active): void
     {
@@ -35,7 +32,7 @@ class FuelTypes {
             return;
         }
 
-        if (!$this->validRootId($root)) {
+        if (!$root || !$this->validRootId($root)) {
             throw new \RuntimeException('Invalid root fuel type id');
         }
 
@@ -43,7 +40,7 @@ class FuelTypes {
         $element['parent'] = &$this->list[$root];
     }
 
-    public function findIdByName($sName): int
+    public function findIdByName(string $sName): int
     {
         $name = trim($sName);
         foreach ($this->list as $id => $element) {
@@ -54,7 +51,7 @@ class FuelTypes {
         return -1;
     }
 
-    public function findNameById($nId): ?string
+    public function findNameById(int $nId): ?string
     {
         if ($this->isValidId($nId)) {
             return $this->list[$nId]['name'];
@@ -62,19 +59,19 @@ class FuelTypes {
         return null;
     }
 
-    public function isValidId($nId): bool
+    public function isValidId(int $nId): bool
     {
-        return isset($this->list[(int)$nId]);
+        return isset($this->list[$nId]);
     }
 
-    public function validRootId($nId): bool
+    public function validRootId(int $nId): bool
     {
         return $this->isValidId($nId) && ($nId%100 === 0);
     }
 
     public static function getTypes(): FuelTypes
     {
-        $list = new FuelTypes();
+        $list = new self();
 
         $fh = fopen(__DIR__ . DIRECTORY_SEPARATOR . 'FuelType.csv', 'r');
         if (!$fh) {

@@ -8,11 +8,11 @@ namespace FuelioImporter\Form\Field;
  * Numeric Field Rendered with MDL sugar
  * @package FuelioImporter\Form\Field
  * @author Kamil Kamiński
- * @see NumericFieldInterface
+ * @see NumericField
  */
-class MDLNumericField extends NumericFieldInterface
+class MDLNumericField extends NumericField
 {
-    public function __construct($name, array $options = [])
+    public function __construct(string $name, array $options = [])
     {
         parent::__construct(
             $name,

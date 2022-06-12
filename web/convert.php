@@ -8,7 +8,7 @@ try {
     $converter = $provider->get(@$_POST['c']);
 
 // Check if we've got any file
-    if (!isset($_FILES['f']) && (!isset($_POST['datastream']) || empty($_POST['datastream']))) {
+    if (!isset($_FILES['f']) && empty(@$_POST['datastream'])) {
         throw new FuelioImporter\NoFileUploadedException();
     }
 
@@ -45,12 +45,8 @@ try {
 
     $outfile = $converter->processFile($infile, $form ? $form->getData() : null);
     $fname = 'FuelioBackup-' . ucfirst(preg_replace('/\s+/', '-', $converter->getOutputFileName())) . '.csv';
-    /*if (defined('DEBUG'))
-        header('Content-Type: text/plain, charset=UTF-8');
-    else {*/
     header('Content-Type: text/csv, charset=UTF-8');
     header('Content-Disposition: attachment; filename="' . filter_var($fname, FILTER_SANITIZE_URL). '"');
-    //}
     $outfile->rewind();
     $outfile->fpassthru();
 } catch (Exception $ex) {

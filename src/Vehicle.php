@@ -69,17 +69,17 @@ class Vehicle implements BackupEntryInterface {
     /** @var string Vehicle model */
     protected string $model;
     
-    /** @var int Vehicle production year */
-    protected int $year;
+    /** @var string Vehicle production year */
+    protected string $year;
 
     /** @var int Number of fuel tanks */
     protected int $tank_count = 1;
 
-    /** @var int Type of fuel */
-    protected int $tank_1_type;
+    /** @var ?int Type of fuel */
+    protected ?int $tank_1_type = null;
 
-    /** @var int Type of fuel */
-    protected int $tank_2_type;
+    /** @var ?int Type of fuel */
+    protected ?int $tank_2_type = null;
 
     /** @var int Flag vehicle is active in app */
     protected int $active = 1;
@@ -97,88 +97,96 @@ class Vehicle implements BackupEntryInterface {
         string $sDescription,
         int $iDistance_unit = Vehicle::KILOMETERS,
         int $iFuel_unit = Vehicle::LITRES,
-        int $iConsumption_unit = Vehicle::L_PER_100KM
+        int $iConsumption_unit = Vehicle::L_PER_100KM,
+        bool $bActive = true
     ) {
         $this->setName($sName);
         $this->setDescription($sDescription);
         $this->setDistanceUnit($iDistance_unit);
         $this->setFuelUnit($iFuel_unit);
         $this->setConsumptionUnit($iConsumption_unit);
+        $this->setActive($bActive);
+        $this->setVIN('');
+        $this->setInsurance('');
+        $this->setPlate('');
+        $this->setMake('');
+        $this->setModel('');
+        $this->setYear('');
+        $this->setTankCount(0);
     }
 
-    public function setName($sName): void
+    public function setName(string $sName): void
     {
         $this->name = $sName;
     }
 
-    public function setDescription($sDescription): void
+    public function setDescription(string $sDescription): void
     {
         $this->description = $sDescription;
     }
 
-    public function setDistanceUnit($iDistance_unit): void
+    public function setDistanceUnit(int $iDistance_unit): void
     {
         $this->distance_unit = $iDistance_unit;
     }
 
-    public function setFuelUnit($iFuel_unit): void
+    public function setFuelUnit(int $iFuel_unit): void
     {
         $this->fuel_unit = $iFuel_unit;
     }
 
-    public function setConsumptionUnit($iConsumption_unit): void
+    public function setConsumptionUnit(int $iConsumption_unit): void
     {
         $this->consumption_unit = $iConsumption_unit;
     }
 
-    public function setVIN($sVin): void
+    public function setVIN(string $sVin): void
     {
         $this->vin = $sVin;
     }
 
-    public function setInsurance($sInsurance): void
+    public function setInsurance(string $sInsurance): void
     {
         $this->insurance = $sInsurance;
     }
 
-    public function setPlate($sPlate): void
+    public function setPlate(string $sPlate): void
     {
         $this->plate = $sPlate;
     }
 
-    public function setMake($sMake): void
+    public function setMake(string $sMake): void
     {
         $this->make = $sMake;
     }
 
-    public function setModel($sModel): void
+    public function setModel(string $sModel): void
     {
         $this->model = $sModel;
     }
 
-    public function setYear($iYear): void
+    public function setYear(string $iYear): void
     {
-        $this->year = (int) $iYear;
+        $this->year = $iYear;
     }
 
-    public function setTankCount($nTankCount): void
+    public function setTankCount(int $nTankCount): void
     {
-        $this->tank_count = (int)$nTankCount;
+        $this->tank_count = $nTankCount;
     }
 
-    public function setTankType($nIdx, $nType): void
+    public function setTankType(int $nIdx, ?int $nType): void
     {
-        $idx = (int)$nIdx;
-        if (($idx !== 1 && $idx !== 2) || $nType === null) {
+        if (($nIdx !== 1 && $nIdx !== 2) || $nType === null) {
             return; //no-op, only two tanks storable
         }
 
-        $this->{'tank_'.$idx.'_type'} = (int)$nType;
+        $this->{'tank_'.$nIdx.'_type'} = $nType;
     }
 
-    public function setActive($bActive): void
+    public function setActive(bool $bActive): void
     {
-        $this->active = (int)(bool)$bActive;
+        $this->active = (int) $bActive;
     }
 
     public function getData(): array

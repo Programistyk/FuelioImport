@@ -5,7 +5,7 @@ use FuelioImporter\Form\FuelLogForm;
 use FuelioImporter\Form\FormInterface;
 use FuelioImporter\CardInterface;
 
-class FuellogCardInterface implements CardInterface
+class FuellogCard implements CardInterface
 {
     public function getClass(): string
     {

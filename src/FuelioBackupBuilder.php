@@ -52,7 +52,7 @@ class FuelioBackupBuilder extends SplTempFileObject {
     /**
      * Writes fuel log entry
      */
-    public function writeFuelLog(FuelLogEntryInterface $entry): void
+    public function writeFuelLog(FuelLogEntry $entry): void
     {
         $this->fputcsv($entry->getData());
     }

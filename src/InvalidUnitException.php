@@ -10,7 +10,7 @@ namespace FuelioImporter;
  * @package Exceptions
  */
 class InvalidUnitException extends \RuntimeException {
-    public function __construct($message = 'Invalid unit specified.', $code = null, $previous = null) {
+    public function __construct(string $message = 'Invalid unit specified.', int $code = 0, ?\Throwable $previous = null) {
         parent::__construct($message, $code, $previous);
     }
 }

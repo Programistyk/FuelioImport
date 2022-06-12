@@ -11,7 +11,7 @@ namespace FuelioImporter;
  */
 class ProviderExistsException extends \RuntimeException
 {
-    public function __construct($message = 'Provider already exists.', $code = 0, \Throwable $previous = null)
+    public function __construct(string $message = 'Provider already exists.', int $code = 0, ?\Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

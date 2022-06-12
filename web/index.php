@@ -110,6 +110,7 @@ $provider = new ConverterProvider();
 <body>
 <form action="convert.php" method="post" enctype="multipart/form-data" class="ghost">
     <fieldset>
+        <label></label>
         <input type="text" name="n" required="required" placeholder="Car name"/>
         <input type="file" name="f"/>
         <?php foreach ($provider as $converter) : ?>
@@ -196,14 +197,14 @@ $provider = new ConverterProvider();
                             <?= $card->getSupporting() ?>
                             <?php $form = $card->getForm(); if ($form) :
                     ?>
-                    <fieldset><?php foreach ($form as $field) : echo $field->render(); endforeach; //$form->fields ?></fieldset>
+                    <fieldset><legend></legend><?php foreach ($form as $field) : echo $field->render(); endforeach; //$form->fields ?></fieldset>
                     <?php endif; //$form ?>
                         </div>
 
                         <div class="mdl-card__actions mdl-card--border">
                             <a id="select-file-<?= $converter->getName() ?>"
-                               class="mdl-button sf mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored mdl--button--primary"><i
-                                    class="material-icons">file_upload</i></a>
+                               class="mdl-button sf mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored mdl--button--primary"><em
+                                    class="material-icons">file_upload</em></a>
                             <?php foreach ($card->getActions() as $action) { ?>
                                 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
                                    href="<?= $action[2] ?>">
@@ -216,7 +217,7 @@ $provider = new ConverterProvider();
                                 <?php foreach ($card->getMenu() as $menu) { ?>
                                     <button
                                         class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
-                                        <i class="material-icons">share</i>
+                                        <em class="material-icons">share</em>
                                     </button>
                                 <?php } ?>
                             </div>

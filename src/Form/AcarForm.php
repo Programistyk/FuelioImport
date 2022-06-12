@@ -6,7 +6,7 @@ namespace FuelioImporter\Form;
 
 use FuelioImporter\Form\Field\MDLNumericField;
 
-class AcarForm extends BaseFormInterface {
+class AcarForm extends AbstractForm {
 
     public function __construct()
     {

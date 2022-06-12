@@ -8,11 +8,13 @@ namespace FuelioImporter\Form;
  * Interface for cards configuration
  * @package FuelioImporter\Form
  * @author Kamil Kamiński
+ * @extends \ArrayAccess<string, FormFieldInterface>
+ * @extends \IteratorAggregate<string, FormFieldInterface>
  */
 interface FormInterface extends \ArrayAccess, \IteratorAggregate {
     /**
      * Processes $_POST data for form
-     * @param $post_data array $_POST
+     * @param array<string,mixed> $post_data PHP's $_POST
      */
     public function process(array $post_data): void;
 
@@ -33,6 +35,7 @@ interface FormInterface extends \ArrayAccess, \IteratorAggregate {
 
     /**
      * Returns processed data
+     * @return null|array<string,mixed>
      */
     public function getData(): ?iterable;
 

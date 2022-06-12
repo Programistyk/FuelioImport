@@ -18,10 +18,10 @@ use FuelioImporter\Form\FormFieldInterface;
  * <li>label => field label</li>
  * <li>attributes => html attributes</li></ul>
  */
-class NumericFieldInterface implements FormFieldInterface
+class NumericField implements FormFieldInterface
 {
     /**
-     * @var array Internal field options
+     * @var array<string,mixed> Internal field options
      */
     protected array $options;
 
@@ -45,9 +45,10 @@ class NumericFieldInterface implements FormFieldInterface
      */
     protected ?FormInterface $form = null;
 
-    public function __construct(?string $name, $options = array())
+    /** @param array<string,mixed> $options */
+    public function __construct(string $name, array $options = [])
     {
-        $defaults = array('min' => 1, 'label' => $name, 'attributes' => array());
+        $defaults = array('min' => 1, 'label' => $name, 'attributes' => []);
 
         $this->options = array_merge($defaults, $options);
 
@@ -98,6 +99,7 @@ class NumericFieldInterface implements FormFieldInterface
         $this->form = $form;
     }
 
+    /** @param float|int|string $value */
     public function setValue($value): void
     {
         $this->raw_value = $value;
@@ -115,12 +117,14 @@ class NumericFieldInterface implements FormFieldInterface
     }
     //</editor-fold>
 
+    /** @param string|int|float $value */
     protected function normalizeValue($value): int
     {
         return (int) $value;
     }
 
-    protected function getRenderingAttributes($attributes): string
+    /** @param iterable<string,string|int|float> $attributes */
+    protected function getRenderingAttributes(iterable $attributes): string
     {
         $vals = array();
         foreach ($attributes as $name => $value) {

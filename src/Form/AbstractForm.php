@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace FuelioImporter\Form;
 
 /**
- * Class for basic IForm implementation
+ * Class for basic Form implementation
  *
- * Implementation uses IFormField for building and processing form data
+ * Implementation uses FormFieldInterface for building and processing form data
  * @package FuelioImporter\Form
  * @author Kamil Kamiński
  */
-abstract class BaseFormInterface implements FormInterface {
+abstract class AbstractForm implements FormInterface {
     /**
      * @var FormFieldInterface[] Internal array of form fields
      */
     protected array $fields;
 
     /**
-     * @var array Submitted data
+     * @var array<string,int|float|string> Submitted data
      */
     protected array $data;
 
@@ -120,6 +120,7 @@ abstract class BaseFormInterface implements FormInterface {
         }
     }
 
+    /** @return \ArrayIterator<string, FormFieldInterface> */
     public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->fields);

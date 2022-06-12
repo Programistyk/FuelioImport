@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace FuelioImporter\Providers;
 
 use DateTime;
-use FuelioImporter\Card\AcarCardInterface;
+use FuelioImporter\Card\AcarCard;
 use FuelioImporter\Cost;
 use FuelioImporter\CostCategory;
 use FuelioImporter\Form\FormValidatorException;
 use FuelioImporter\FuelioBackupBuilder;
-use FuelioImporter\FuelLogEntryInterface;
+use FuelioImporter\FuelLogEntry;
 use FuelioImporter\FuelTypes;
 use FuelioImporter\CardInterface;
 use FuelioImporter\ProviderInterface;
@@ -25,21 +25,21 @@ class AcarProvider implements ProviderInterface {
 
     // Car name
     protected string $car_name = 'aCar import';
-    // List of files in zip archive
+    /** @var array<string, array<string|int>|false> List of files in zip archive */
     protected array $archive_files = [];
-    // metadata.inf file contents as array
+    /** @var array<string, string> metadata.inf file contents as array */
     protected array $metadata = [];
-    // preferences.xml file contents as array
+    /** @var array<string, string|bool> preferences.xml file contents as array */
     protected array $preferences = [];
-    // List of expenses from expenses.xml (as CostCategory instances)
+    /** @var array<int|string, CostCategory> List of expenses from expenses.xml (as CostCategory instances) */
     protected array $expenses = [];
-    // List of services from services.xml (as CostCategory instances)
+    /** @var array<int|string, CostCategory> List of services from services.xml (as CostCategory instances) */
     protected array $services = [];
     // Vehicle number provided by form
     protected int $selected_vehicle = 1;
-    // Fuel types declared in aCar backup
+    /** @var array<int, array{name: string, category: string}> Fuel types declared in aCar backup */
     protected array $acar_fuels = [];
-    protected ?FuelTypes $fuel_types;
+    protected ?FuelTypes $fuel_types = null;
 
     // @see IConverter
     public function getName(): string
@@ -74,7 +74,10 @@ class AcarProvider implements ProviderInterface {
     }
 
     // @see IConverter
-    public function processFile(SplFileObject $in, $form_data): FuelioBackupBuilder {
+    public function processFile(SplFileObject $in, ?iterable $form_data): FuelioBackupBuilder {
+        if (!$form_data) {
+            throw new FormValidatorException('Missing form data, you need to choose vehicle #');
+        }
         // We need to verify that we've got valid archive
 
         $zip = new ZipArchive();
@@ -130,7 +133,7 @@ class AcarProvider implements ProviderInterface {
 
     // @see IConverter
     public function getCard(): CardInterface {
-        return new AcarCardInterface();
+        return new AcarCard();
     }
 
     /**
@@ -235,7 +238,7 @@ class AcarProvider implements ProviderInterface {
      * @return integer Vehicle constant
      * @throws InvalidUnitException On unsupported unit
      */
-    protected function getFuelUnit(SimpleXMLElement $vehicleNode): ?int {
+    protected function getFuelUnit(SimpleXMLElement $vehicleNode): int {
         // New aCar version stores volume unit per vehicle, not globally
         if (array_key_exists('acar.volume-unit', $this->preferences)) {
             $volume_unit = $this->preferences['acar.volume-unit'];
@@ -254,7 +257,7 @@ class AcarProvider implements ProviderInterface {
             case 'gallon': // TODO: Can anybody confirm this?
             case 'gal (UK)': return Vehicle::GALLONS_UK;
             default:
-                throw new \FuelioImporter\InvalidUnitException();
+                throw new InvalidUnitException();
         }
     }
 
@@ -263,7 +266,7 @@ class AcarProvider implements ProviderInterface {
      * @return integer Vehicle constant
      * @throws InvalidUnitException
      */
-    protected function getDistanceUnit(SimpleXMLElement $vehicleNode): ?int
+    protected function getDistanceUnit(SimpleXMLElement $vehicleNode): int
     {
         // New aCar version stores distance unit per vehicle, not globally
         if (array_key_exists('acar.distance-unit', $this->preferences)) {
@@ -281,7 +284,7 @@ class AcarProvider implements ProviderInterface {
             case 'kilometer':
                 return Vehicle::KILOMETERS;
             default:
-                throw new \FuelioImporter\InvalidUnitException();
+                throw new InvalidUnitException();
         }
     }
 
@@ -317,7 +320,7 @@ class AcarProvider implements ProviderInterface {
      * @throws InvalidFileFormatException
      * @throws FormValidatorException
      */
-    protected function getVehicle($iVehicle, ZipArchive $in): SimpleXMLElement {
+    protected function getVehicle(int $iVehicle, ZipArchive $in): SimpleXMLElement {
         $stream = $in->getStream('vehicles.xml');
         $xml = new \SimpleXMLElement(stream_get_contents($stream));
         if (!$xml) {
@@ -338,10 +341,9 @@ class AcarProvider implements ProviderInterface {
      * @param string $date
      * @return string ATOM-formatted DateTime string
      */
-    protected function readDate($date): string
+    protected function readDate(string $date): string
     {
-        $dt = DateTime::createFromFormat('m/d/Y - H:i', (string) $date);
-        return $dt->format(DateTime::ATOM);
+        return DateTime::createFromFormat('m/d/Y - H:i', $date)->format(\DateTimeInterface::ATOM);
     }
 
     /**
@@ -355,24 +357,28 @@ class AcarProvider implements ProviderInterface {
         $out->writeFuelLogHeader();
 
         foreach ($data->{'fillup-records'}->{'fillup-record'} as $record) {
-            $entry = new FuelLogEntryInterface();
+            $entry = new FuelLogEntry();
 
-            $entry->setDate($this->readDate($record->date));
-            $entry->setFuel((string) $record->volume);
-            $entry->setPrice((string) $record->{'total-cost'});
-            $entry->setOdo((string) $record->{'odometer-reading'});
+            $entry->setDate($this->readDate((string)$record->date));
+            $entry->setFuel((float) $record->volume);
+            $entry->setPrice((float) $record->{'total-cost'});
+            $entry->setOdo((int) $record->{'odometer-reading'});
             // According to Adrian Kajda consumption is calculated by app itself
             // and we should not store it
             // $consumption = (string) $record->{'fuel-efficiency'};
             // $entry->setConsumption($this->calculateConsumption($consumption, $this->getConsumptionUnit()));
 
-            $entry->setGeoCoords((string) $record->latitude, (string) $record->longitude);
+            $entry->setGeoCoords((float) $record->latitude, (float) $record->longitude);
             $entry->setFullFillup((string) $record->partial !== 'true');
-            $entry->setMissedEntries((string) $record->{'previous-missed-fillups'} === 'true');
+            $entry->setMissedEntries((int) ($record->{'previous-missed-fillups'} === 'true'));
             $notes = (string) $record->{'fuel-brand'} . ' ' . (string) $record->{'fueling-station-address'} . ' ' . (string) $record->notes;
             $entry->setNotes(trim($notes));
             $entry->setMissedEntries(0);
-            $entry->setFuelType($this->getFuelType((string)$record->{'fuel-type-id'}));
+            $fuelType = $this->getFuelType((int)$record->{'fuel-type-id'});
+            if (!$fuelType) {
+                throw new InvalidUnitException('Cannot determine fuel unit');
+            }
+            $entry->setFuelType($fuelType);
             $out->writeFuelLog($entry);
         }
     }
@@ -546,9 +552,9 @@ class AcarProvider implements ProviderInterface {
     protected function processExpense(SimpleXMLElement $expense, FuelioBackupBuilder $out): void
     {
         $cost = new Cost();
-        $cost->setDate($this->readDate($expense->date));
-        $cost->setCost((string) $expense->{'total-cost'});
-        $cost->setOdo((string) $expense->{'odometer-reading'});
+        $cost->setDate($this->readDate((string) $expense->date));
+        $cost->setCost((float) $expense->{'total-cost'});
+        $cost->setOdo((int) $expense->{'odometer-reading'});
         // Set category
         if ($expense->expenses && $expense->expenses->expense[0]) {
             $atts = $expense->expenses->expense[0]->attributes();
@@ -593,9 +599,9 @@ class AcarProvider implements ProviderInterface {
     protected function processService(SimpleXMLElement $service, FuelioBackupBuilder $out): void
     {
         $cost = new Cost();
-        $cost->setDate($this->readDate($service->date));
-        $cost->setCost((string) $service->{'total-cost'});
-        $cost->setOdo((string) $service->{'odometer-reading'});
+        $cost->setDate($this->readDate((string) $service->date));
+        $cost->setCost((float) $service->{'total-cost'});
+        $cost->setOdo((int) $service->{'odometer-reading'});
         // Set category
         if ($service->services && $service->services->service[0]) {
             $atts = $service->services->service[0]->attributes();
@@ -682,7 +688,7 @@ class AcarProvider implements ProviderInterface {
 
     protected function readFuelTypes(SimpleXMLElement $root_node): void
     {
-        $this->acar_fuels = array();
+        $this->acar_fuels = [];
         foreach ($root_node->{'fuel-type'} as $node) {
             $atts = $node->attributes();
             $id = (int)(string)$atts['id'];
@@ -697,7 +703,7 @@ class AcarProvider implements ProviderInterface {
         $this->fuel_types = FuelTypes::getTypes();
     }
 
-    protected function getFuelType($iAcarFuelType): ?int
+    protected function getFuelType(int $iAcarFuelType): ?int
     {
 
         if (!$this->fuel_types) {

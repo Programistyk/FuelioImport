@@ -11,7 +11,8 @@ namespace FuelioImporter;
  */
 class InvalidFileFormatException extends \RuntimeException {
 
-    public function __construct($message = 'Provided file is in invalid format.', $code = 0, $previous = null) {
+    public function __construct(string $message = 'Provided file is in invalid format.', int $code = 0, ?\Throwable $previous = null)
+    {
         parent::__construct($message, $code, $previous);
     }
 }

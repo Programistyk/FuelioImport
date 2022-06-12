@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace FuelioImporter\Providers;
 
-use FuelioImporter\Card\MotostatCardInterface;
+use FuelioImporter\Card\MotostatCard;
 use FuelioImporter\CardInterface;
 use FuelioImporter\ProviderInterface;
 use FuelioImporter\FuelioBackupBuilder;
 use FuelioImporter\CostCategory;
 use FuelioImporter\Cost;
-use FuelioImporter\FuelLogEntryInterface;
+use FuelioImporter\FuelLogEntry;
 use FuelioImporter\InvalidFileFormatException;
 use FuelioImporter\Vehicle;
 use SplFileObject;
@@ -18,14 +18,16 @@ use SplFileObject;
 class MotostatProvider implements ProviderInterface
 {
     protected string $car_name = 'Motostat import';
+    /** @var array<array<string|null>> */
     protected array $costs_data = [];
-    // @see __construct
+    /** @var array<string,CostCategory> */
     protected array $categories = [];
+    /** @var list<Cost> */
     protected array $costs = [];
 
     public function __construct() {
         // keys are normalized categories names (see findCategory)
-        $this->categories = array(
+        $this->categories = [
             'purchase_price' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 1, 'Purchase price'),
             'tech_inspection' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 2, 'Tech inspection'),
             'miscellaneous' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 3, 'Miscellaneous'),
@@ -37,7 +39,7 @@ class MotostatProvider implements ProviderInterface
             'inspection' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 8, 'inspection'),
             'oil_change' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 9, 'Oil change'),
             'insurance' => new CostCategory(31, 'Insurance')
-        );
+        ];
     }
 
     public function getName(): string
@@ -57,7 +59,7 @@ class MotostatProvider implements ProviderInterface
 
     public function getCard(): CardInterface
     {
-        return new MotostatCardInterface();
+        return new MotostatCard();
     }
 
     public function setCarName($name): void
@@ -82,7 +84,7 @@ class MotostatProvider implements ProviderInterface
         return null;
     }
 
-    public function processFile(\SplFileObject $in, $form_data): FuelioBackupBuilder
+    public function processFile(\SplFileObject $in, ?iterable $form_data): FuelioBackupBuilder
     {
         if ($in->isDir() || ($in->isFile() && !$in->isReadable())) {
             throw new InvalidFileFormatException();
@@ -137,14 +139,14 @@ class MotostatProvider implements ProviderInterface
                 continue; // no fueling_id
             }
 
-            $entry = new FuelLogEntryInterface();
-            $entry->setDate($log[3]);
-            $entry->setOdo($log[6]);
-            $entry->setFuel($log[8]);
+            $entry = new FuelLogEntry();
+            $entry->setDate((string)$log[3]);
+            $entry->setOdo((int)$log[6]);
+            $entry->setFuel((float)$log[8]);
             $entry->setFullFillup($log[11] === 'full');
-            $entry->setPrice($log[9]);
-            $entry->setConsumption($log[18]);
-            $entry->setNotes($log[21]);
+            $entry->setPrice((float)$log[9]);
+            $entry->setConsumption((float)$log[18]);
+            $entry->setNotes((string)$log[21]);
 
             $out->writeFuelLog($entry);
         }
@@ -156,14 +158,14 @@ class MotostatProvider implements ProviderInterface
     protected function processCostData(FuelioBackupBuilder $out): void
     {
         foreach ($this->costs_data as $line) {
-            $category = $this->findCategory($line[2]);
+            $category = $this->findCategory((string)$line[2]);
             $cost = new Cost();
             $cost->setTitle($category->getName());
-            $cost->setDate($line[3]);
-            $cost->setOdo($line[6]);
+            $cost->setDate((string)$line[3]);
+            $cost->setOdo((int)$line[6]);
             $cost->setCostCategoryId($category->getTypeId());
-            $cost->setNotes($line[10]);
-            $cost->setCost($line[9]);
+            $cost->setNotes((string)$line[10]);
+            $cost->setCost((float)$line[9]);
 
             $this->costs[] = $cost;
         }
@@ -197,7 +199,7 @@ class MotostatProvider implements ProviderInterface
 
         // Add new category
         $category = new CostCategory(count($this->categories) + 1, $category_name);
-        $this->categories[] = $category;
+        $this->categories[$normalized_category_name] = $category;
         return $category;
     }
 

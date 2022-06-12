@@ -30,13 +30,13 @@ interface CardInterface {
     
     /**
      * Returns action items
-     * @return array<array-key,array> Array of action menu entries
+     * @return list<array<string>> Array of action menu entries
      */
     public function getActions(): array;
     
     /**
      * Returns card menu items
-     * @return array Array of card menu entries
+     * @return list<array<string>> Array of card menu entries
      */
     public function getMenu(): array;
 

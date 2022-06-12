@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace FuelioImporter;
 
-use FuelioImporter\BackupEntryInterface;
-use FuelioImporter\FuelioBackupBuilder;
-
 /**
  * Fuel log model
  * @author Kamil Kamiński
  * @version 20180124
  */
-class FuelLogEntryInterface implements BackupEntryInterface {
+class FuelLogEntry implements BackupEntryInterface {
     /** @var string Fueling timestamp, valid for \DateTime constructor */
     protected string $data;
     /** @var integer Odometer reading (total) */
@@ -42,39 +39,39 @@ class FuelLogEntryInterface implements BackupEntryInterface {
     /** @var double Volume price*/
     protected float $volume_price;
 
-    public function setDate($sDatetime): void
+    public function setDate(string $sDatetime): void
     {
         $dt = new \DateTime($sDatetime);
         $this->data = $dt->format(FuelioBackupBuilder::DATE_FORMAT);
     }
 
-    public function setOdo($iOdo): void
+    public function setOdo(int $iOdo): void
     {
-        $this->odo = (int)$iOdo;
+        $this->odo = $iOdo;
     }
 
-    public function setFuel($dFuel): void
+    public function setFuel(float $dFuel): void
     {
         $this->fuel = $dFuel;
     }
 
-    public function setFullFillup($bFull): void
+    public function setFullFillup(bool $bFull): void
     {
         // force integer form of forced boolean :)
-        $this->full_fillup = (int) (bool) $bFull;
+        $this->full_fillup = (int) $bFull;
     }
 
-    public function setPrice($dPrice): void
+    public function setPrice(float $dPrice): void
     {
         $this->price = $dPrice;
     }
 
-    public function setConsumption($dConsumption): void
+    public function setConsumption(float $dConsumption): void
     {
         $this->consumption = $dConsumption;
     }
 
-    public function setGeoCoords($dLatitude, $dLongitude): void
+    public function setGeoCoords(float $dLatitude, float $dLongitude): void
     {
         $this->latitude = $dLatitude;
         $this->longitude = $dLongitude;
@@ -86,34 +83,34 @@ class FuelLogEntryInterface implements BackupEntryInterface {
         }
     }
 
-    public function setCity($sCity): void
+    public function setCity(string $sCity): void
     {
         $this->city = $sCity;
     }
     
-    public function setNotes($sNotes): void
+    public function setNotes(string $sNotes): void
     {
         $this->notes = $sNotes;
     }
     
-    public function setMissedEntries($iMissed): void
+    public function setMissedEntries(int $iMissed): void
     {
         $this->missed_entries = $iMissed;
     }
 
-    public function setTankNumber($nTankNumber): void
+    public function setTankNumber(int $nTankNumber): void
     {
-        $this->tank_number = (int)$nTankNumber;
+        $this->tank_number = $nTankNumber;
     }
 
-    public function setFuelType($nFuelType): void
+    public function setFuelType(int $nFuelType): void
     {
-        $this->fuel_type = (int)$nFuelType;
+        $this->fuel_type = $nFuelType;
     }
 
-    public function setVolumePrice($dVolumePrice): void
+    public function setVolumePrice(float $dVolumePrice): void
     {
-        $this->volume_price = (double)$dVolumePrice;
+        $this->volume_price = $dVolumePrice;
     }
 
     public function getData(): array

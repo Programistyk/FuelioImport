@@ -40,9 +40,9 @@ interface ProviderInterface {
     
     /**
      * Method that processes given file returning SplTempFileObject
-     * @todo Setup form_data type
+     * @param null|array<string,mixed> $form_data
      */
-    public function processFile(SplFileObject $in, $form_data): FuelioBackupBuilder;
+    public function processFile(SplFileObject $in, ?iterable $form_data): FuelioBackupBuilder;
     
     /**
      * Method returns a CardInterface for visual representation

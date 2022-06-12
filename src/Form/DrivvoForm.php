@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace FuelioImporter\Form;
 
-use FuelioImporter\Form\BaseFormInterface;
+use FuelioImporter\Form\AbstractForm;
 use FuelioImporter\Form\Field\MDLNumericField;
 
-class DrivvoForm extends BaseFormInterface {
+class DrivvoForm extends AbstractForm {
 
     public function __construct()
     {

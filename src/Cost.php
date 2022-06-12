@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace FuelioImporter;
 
-use FuelioImporter\BackupEntryInterface;
-use FuelioImporter\FuelioBackupBuilder;
-
 /**
  * Additional costs model
  * @author Kamil Kamiński
@@ -48,7 +45,7 @@ class Cost implements BackupEntryInterface
     /** @var integer Unique cost id */
     protected int $unique_id;
     
-    public function setTitle($sTitle): void
+    public function setTitle(string $sTitle): void
     {
         if (empty($sTitle)) {
             $sTitle = 'No title';
@@ -56,77 +53,77 @@ class Cost implements BackupEntryInterface
         $this->title = $sTitle;
     }
     
-    public function setDate($sDate): void
+    public function setDate(string $sDate): void
     {
         $dt = new \DateTime($sDate);
         $this->date = $dt->format(FuelioBackupBuilder::DATE_FORMAT);
     }
     
-    public function setOdo($iOdo): void
+    public function setOdo(int $iOdo): void
     {
-        $this->odo = (int) $iOdo;
+        $this->odo = $iOdo;
     }
     
-    public function setCostCategoryId($iId): void
+    public function setCostCategoryId(int $iId): void
     {
         $this->cost_category_id = $iId;
     }
     
-    public function setNotes($sNotes): void
+    public function setNotes(string $sNotes): void
     {
         $this->notes = $sNotes;
     }
     
-    public function setCost($dCost): void
+    public function setCost(float $dCost): void
     {
         $this->cost = $dCost;
-        $this->setIsIncome($dCost<0);
+        $this->setIsIncome($dCost < 0);
     }
     
-    public function setFlag($flag): void
+    public function setFlag(int $flag): void
     {
         $this->flag = $flag;
     }
     
-    public function setIdR($iId): void
+    public function setIdR(int $iId): void
     {
         $this->idR = $iId;
     }
     
-    public function setRead($bRead): void
+    public function setRead(bool $bRead): void
     {
-        $this->read = (int)(bool) $bRead;
+        $this->read = (int) $bRead;
     }
     
-    public function setReminderOdo($iOdo): void
+    public function setReminderOdo(int $iOdo): void
     {
         $this->remindOdo = $iOdo;
     }
     
-    public function setReminderDate($sDate): void
+    public function setReminderDate(string $sDate): void
     {
         $dt = new \DateTime($sDate);
         $this->remindDate = $dt->format(FuelioBackupBuilder::DATE_FORMAT);
     }
 
-    public function setRepeatOdo($iOdo): void
+    public function setRepeatOdo(int $iOdo): void
     {
-        $this->repeat_odo = (int)$iOdo;
+        $this->repeat_odo = $iOdo;
     }
 
-    public function setRepeatMonths($sMonths):void
+    public function setRepeatMonths(int $sMonths):void
     {
-        $this->repeat_months = (int)$sMonths;
+        $this->repeat_months = $sMonths;
     }
 
-    public function setIsIncome($bIsIncome): void
+    public function setIsIncome(bool $bIsIncome): void
     {
-        $this->is_income = (int) (bool) $bIsIncome;
+        $this->is_income = (int) $bIsIncome;
     }
 
-    public function setUniqueId($iUniqueId): void
+    public function setUniqueId(int $iUniqueId): void
     {
-        $this->unique_id = (int)$iUniqueId;
+        $this->unique_id = $iUniqueId;
     }
 
     public function getCostDate(): string

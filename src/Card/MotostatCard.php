@@ -7,7 +7,7 @@ namespace FuelioImporter\Card;
 use FuelioImporter\Form\FormInterface;
 use FuelioImporter\CardInterface;
 
-class MotostatCardInterface implements CardInterface
+class MotostatCard implements CardInterface
 {
     public function getTitle(): string
     {

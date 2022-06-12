@@ -4,26 +4,27 @@ declare(strict_types=1);
 
 namespace FuelioImporter\Providers;
 
-use FuelioImporter\Card\FuellogCardInterface;
+use FuelioImporter\Card\FuellogCard;
+use FuelioImporter\CardInterface;
 use FuelioImporter\Cost;
 use FuelioImporter\CostCategory;
 use FuelioImporter\FuelioBackupBuilder;
-use FuelioImporter\FuelLogEntryInterface;
-use FuelioImporter\CardInterface;
-use FuelioImporter\ProviderInterface;
+use FuelioImporter\FuelLogEntry;
 use FuelioImporter\InvalidFileFormatException;
 use FuelioImporter\InvalidUnitException;
+use FuelioImporter\ProviderInterface;
 use FuelioImporter\Vehicle;
 
 class FuellogProvider implements ProviderInterface
 {
+    /** @var array<string,array<string|null>> */
     protected array $vehicles = [];
     /** @var string Vehicle key used to import data */
-    protected string $vehicle_key;
+    protected string $vehicle_key = '';
     /** @var ?int Vehicle index provided by user */
-    protected ?int $selected_vehicle;
+    protected ?int $selected_vehicle = null;
     /** @var string|null Output filename */
-    protected ?string $output_filename;
+    protected ?string $output_filename = '';
     /** @var string Delimiter used in CSV parser */
     private string $delimiter = ',';
 
@@ -56,7 +57,7 @@ class FuellogProvider implements ProviderInterface
 
     public function getCard(): CardInterface
     {
-        return new FuellogCardInterface();
+        return new FuellogCard();
     }
 
     public function getErrors(): array
@@ -69,7 +70,7 @@ class FuellogProvider implements ProviderInterface
         return [];
     }
 
-    public function processFile(\SplFileObject $in, $form_data): FuelioBackupBuilder
+    public function processFile(\SplFileObject $in, ?iterable $form_data): FuelioBackupBuilder
     {
         if ($in->isDir() || ($in->isFile() && !$in->isReadable())) {
             throw new InvalidFileFormatException();
@@ -92,7 +93,7 @@ class FuellogProvider implements ProviderInterface
         }
 
         // Import vehicles
-        $this->selected_vehicle = (int)$form_data['vehicle_id'] - 1;
+        $this->selected_vehicle = (int)($form_data['vehicle_id'] ?? 0) - 1;
         if ($this->selected_vehicle < 0) {
             $this->selected_vehicle = null; // Autoselect
         }
@@ -176,14 +177,14 @@ class FuellogProvider implements ProviderInterface
 
         // Prepare Vehicle
         $data = $this->vehicles[$this->vehicle_key];
-        $vname = trim($data[0]) . ' ' . trim($data[1]); // Build proper name: Make + Model;
-        $this->output_filename .= $vname;
+        $vname = trim((string)$data[0]) . ' ' . trim((string)$data[1]); // Build proper name: Make + Model;
+        $this->output_filename = $vname;
         $vehicle = new Vehicle(
             $vname,
-            $data[2], // Use Notes as description
-            $this->getDistanceUnit($data[3]),
-            $this->getVolumeUnit($data[4]),
-            $this->getConsumptionUnit($data[5])
+            (string)$data[2], // Use Notes as description
+            $this->getDistanceUnit((string)$data[3]),
+            $this->getVolumeUnit((string)$data[4]),
+            $this->getConsumptionUnit((string)$data[5])
         );
         $out->writeVehicle($vehicle);
     }
@@ -205,18 +206,18 @@ class FuellogProvider implements ProviderInterface
             }
 
             // Skip data for car not selected
-            $data_key = $data[0].'.'.$data[1];
+            $data_key = (string)$data[0] . '.' . (string)$data[1];
             if ($data_key !== $this->vehicle_key) {
                 continue;
             }
             
-            $entry = new FuelLogEntryInterface();
+            $entry = new FuelLogEntry();
             $entry->setDate($this->normalizeDate($data[2] ?? ''));
-            $entry->setOdo((double)$data[3]);
-            $entry->setFuel((double)$data[4]);
+            $entry->setOdo((int)$data[3]);
+            $entry->setFuel((float)$data[4]);
             $entry->setVolumePrice((double)$data[5]);
             $entry->setFullFillup($data[6] !== '1');
-            $entry->setNotes($data[7]);
+            $entry->setNotes((string)$data[7]);
 
             $out->writeFuelLog($entry);
         } while (!$in->eof() && strpos($data[0] ?? '', '#', 0) !== 0);
@@ -248,7 +249,7 @@ class FuellogProvider implements ProviderInterface
             }
 
             // Skip data for car not selected
-            $data_key = $data[0].'.'.$data[1];
+            $data_key = (string)$data[0] . '.' . (string)$data[1];
             if ($data_key !== $this->vehicle_key) {
                 continue;
             }
@@ -259,7 +260,7 @@ class FuellogProvider implements ProviderInterface
             $cost->setDate($this->normalizeDate($data[3] ?? ''));
             $cost->setTitle(trim($data[2] ?? ''));
             $cost->setNotes(trim($data[6] ?? ''));
-            $cost->setOdo($data[4]);
+            $cost->setOdo((int)$data[4]);
             $cost->setReminderDate($this->convertCostReminder($this->normalizeDate($data[3] ?? ''), $data[7] ?? ''));
             $cost->setRepeatMonths($this->convertRepeatMonths($data[7] ?? ''));
             $out->writeCost($cost);
@@ -391,10 +392,10 @@ class FuellogProvider implements ProviderInterface
     /**
      * Returns cost date moved according to recurrence type
      * @param string $sDate current cost date
-     * @return null|string New reminders date
+     * @return string New reminders date
      * @throws InvalidUnitException
      */
-    protected function convertCostReminder(string $sDate, string $raw_recurrence): ?string
+    protected function convertCostReminder(string $sDate, string $raw_recurrence): string
     {
         /* Based on FuelLog's explanations.txt */
 

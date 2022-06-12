@@ -31,6 +31,11 @@ class CostCategory implements BackupEntryInterface
     {
         return $this->type_id;
     }
+
+    public function setTypeId(int $typeId): void
+    {
+        $this->type_id = $typeId;
+    }
     
     public function getName(): string
     {

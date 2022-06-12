@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace FuelioImporter\Providers;
 
-use FuelioImporter\Card\DrivvoCardInterface;
+use FuelioImporter\Card\DrivvoCard;
 use FuelioImporter\Cost;
 use FuelioImporter\CostCategory;
+use FuelioImporter\Form\FormValidatorException;
 use FuelioImporter\FuelioBackupBuilder;
-use FuelioImporter\FuelLogEntryInterface;
+use FuelioImporter\FuelLogEntry;
 use FuelioImporter\CardInterface;
 use FuelioImporter\ProviderInterface;
 use FuelioImporter\InvalidFileFormatException;
@@ -17,18 +18,13 @@ use SplFileObject;
 
 class DrivvoProvider implements ProviderInterface
 {
-    protected array $vehicles = [];
-    /** @var ?string Vehicle key used to import data */
-    protected string $vehicle_key;
-    /** @var ?int Vehicle index provided by user */
-    protected int $selected_vehicle;
-    /** @var string|null Output filename */
-    protected ?string $output_filename = null;
+    /** @var string Output filename */
+    protected string $output_filename = '';
     /** @var int distance unit */
     protected int $dist_unit = 0;
     /** @var int fuel unit */
     protected int $fuel_unit = 0;
-    /** @var array list of warnings */
+    /** @var array<string> list of warnings */
     protected array $warnings = [];
 
     private const FUELLING_HEADERS = [
@@ -52,11 +48,11 @@ class DrivvoProvider implements ProviderInterface
         'Ja'
     ];
 
-    private const FALSY = [
-        'No',
-        'Nie',
-        'Nein'
-    ];
+//    private const FALSY = [
+//        'No',
+//        'Nie',
+//        'Nein'
+//    ];
 
     public function getName(): string
     {
@@ -87,7 +83,7 @@ class DrivvoProvider implements ProviderInterface
 
     public function getCard(): CardInterface
     {
-        return new DrivvoCardInterface();
+        return new DrivvoCard();
     }
 
     public function getErrors(): array
@@ -100,18 +96,22 @@ class DrivvoProvider implements ProviderInterface
         return $this->warnings;
     }
 
-    public function processFile(SplFileObject $in, $form_data): FuelioBackupBuilder
+    public function processFile(SplFileObject $in, ?iterable $form_data): FuelioBackupBuilder
     {
         if ($in->isDir() || ($in->isFile() && !$in->isReadable())) {
             throw new InvalidFileFormatException('File is not readable');
+        }
+
+        if (!$form_data) {
+            throw new FormValidatorException('No form data received');
         }
 
         if (!ini_get("auto_detect_line_endings")) {
             ini_set("auto_detect_line_endings", '1');
         }
 
-        $this->dist_unit = $form_data['dist_unit'];
-        $this->fuel_unit = $form_data['fuel_unit'];
+        $this->dist_unit = (int) $form_data['dist_unit'];
+        $this->fuel_unit = (int) $form_data['fuel_unit'];
 
         // Configure reader
         $in->setFlags(SplFileObject::SKIP_EMPTY | SplFileObject::DROP_NEW_LINE);
@@ -190,10 +190,10 @@ class DrivvoProvider implements ProviderInterface
         do {
             $data = $in->fgetcsv();
             if ($data && $data[0] !== '' && $data[0] > 0) {
-                $entry = new FuelLogEntryInterface();
-                $entry->setDate($this->normalizeDate($data[1]));
-                $entry->setOdo((double)$data[0]);
-                $entry->setFuel((double)$data[5]);
+                $entry = new FuelLogEntry();
+                $entry->setDate($this->normalizeDate((string)$data[1]));
+                $entry->setOdo((int)$data[0]);
+                $entry->setFuel((float)$data[5]);
                 $entry->setVolumePrice((double)$data[3]);
 
                 //Full fillup
@@ -202,10 +202,10 @@ class DrivvoProvider implements ProviderInterface
                 $fullfillup = $data[6];
                 $ifull = (int)in_array($fullfillup, self::TRUTHY, true);
 
-                $entry->setFullFillup($ifull);
+                $entry->setFullFillup((bool)$ifull);
 
-                $entry->setPrice($data[4]);
-                $entry->setNotes($data[18]);
+                $entry->setPrice((float)$data[4]);
+                $entry->setNotes((string)$data[18]);
 
                 $out->writeFuelLog($entry);
             }
@@ -232,8 +232,8 @@ class DrivvoProvider implements ProviderInterface
             $data = $in->fgetcsv();
             if ($data && $data[0] !== '' && $data[0] > 0) {
                 $cost = new Cost();
-                $cost->setOdo($data[0]);
-                $cost->setDate($this->normalizeDate($data[1]));
+                $cost->setOdo((int)$data[0]);
+                $cost->setDate($this->normalizeDate((string)$data[1]));
                 $cost->setCost((double)$data[2]);
                 $cost->setCostCategoryId(2);
                 $cost->setTitle(trim($data[3] ?? ''));
@@ -262,8 +262,8 @@ class DrivvoProvider implements ProviderInterface
             $data = $in->fgetcsv();
             if ($data && $data[0] !== '' && $data[0] > 0 && count($header) === 6) {
                 $cost = new Cost();
-                $cost->setOdo($data[0]);
-                $cost->setDate($this->normalizeDate($data[1]));
+                $cost->setOdo((int)$data[0]);
+                $cost->setDate($this->normalizeDate((string)$data[1]));
                 $cost->setCost((double)$data[2]);
                 $cost->setCostCategoryId(1);
                 $cost->setTitle(trim($data[3] ?? ''));
@@ -281,7 +281,7 @@ class DrivvoProvider implements ProviderInterface
      *
      * Currently it only detects dd/mm/YYYY format and turns it into YYYY-MM-DD
      */
-    protected function normalizeDate($date): string
+    protected function normalizeDate(string $date): string
     {
         // Let's assume date could be written as X/Y/ZZZZ
         // Let's assume it's written with '/' as separator
@@ -293,6 +293,7 @@ class DrivvoProvider implements ProviderInterface
         return $date; //no-op
     }
 
+    /** @param array<string> $headers */
     protected function rewindToHeader(SplFileObject $file, array $headers): void
     {
         $file->rewind();

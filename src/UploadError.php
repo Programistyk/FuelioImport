@@ -9,7 +9,7 @@ use Throwable;
 class UploadError extends \RuntimeException
 {
     /** @param array<string,mixed> $file_array */
-    public function __construct(array $file_array, $code = 0, ?Throwable $previous = null)
+    public function __construct(array $file_array, int $code = 0, ?Throwable $previous = null)
     {
         switch ($file_array['error']) {
             case UPLOAD_ERR_CANT_WRITE: $message = 'Cannot store file on server: Write error'; break;

@@ -13,6 +13,7 @@ use IteratorAggregate;
  * 
  * Provides interface for converting plugins detection and loading
  * @author Kamil Kamiński
+ * @implements IteratorAggregate<string, ProviderInterface>
  */
 class ConverterProvider implements IteratorAggregate {
 
@@ -23,7 +24,7 @@ class ConverterProvider implements IteratorAggregate {
 
     /**
      * Interface implementation for iterating over available plugins
-     * @return ArrayIterator
+     * @return ArrayIterator<string, ProviderInterface>
      */
     public function getIterator(): ArrayIterator
     {
