@@ -1,0 +1,46 @@
+{
+    "name": "programistyk/fuelio",
+    "description": "Fuelio Imports Converter",
+    "type": "project",
+    "homepage": "https://fuelio.programistyk.pl",
+    "require": {
+        "php": "^7.4",
+        "ext-zip": "*",
+        "ext-simplexml": "*",
+        "ext-xml": "*",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "vimeo/psalm": "^4.23",
+        "phpstan/phpstan": "^1.7"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "FuelioImporter\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Kamil Kamiński",
+            "email": "kamil@programistyk.pl",
+            "homepage": "https://programistyk.pl",
+            "role": "Developer"
+        },
+        {
+            "name": "Adrian Kajda",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/Programistyk/FuelioImport/issues",
+        "source": "https://github.com/Programistyk/FuelioImport"
+    },
+    "minimum-stability": "stable",
+    "config": {
+        "platform": {
+            "php": "7.4"
+        },
+        "sort-packages": true
+    }
+}

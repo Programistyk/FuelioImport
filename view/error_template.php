@@ -66,7 +66,7 @@
                 </div>
             </div>
         </div>
-        <?php @include 'analytics.html' ?>
+        <?php include '_append_analytics.php' ?>
         <script>
             if (ga !== undefined) {
                 ga('send', 'exception', {

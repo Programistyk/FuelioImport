@@ -1,5 +1,5 @@
 source:
-    - lib
+    - src
 
 destination: doc
 templateTheme: bootstrap
