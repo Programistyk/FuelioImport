@@ -109,7 +109,8 @@ class NumericField implements FormFieldInterface
 
     public function render(): string
     {
-        return sprintf('<input type="number" name="%s" value="%s"%s/>',
+        return sprintf(
+            '<input type="number" name="%s" value="%s"%s/>',
             addcslashes($this->form ? sprintf('%s[%s]', $this->form->getName(), $this->getName()) : $this->getName(), '"'),
             addcslashes((string)$this->getValue(), '"'),
             $this->getRenderingAttributes($this->options['attributes'])
@@ -128,7 +129,7 @@ class NumericField implements FormFieldInterface
     {
         $vals = array();
         foreach ($attributes as $name => $value) {
-            $vals[] = sprintf('%s="%s"', str_replace(' ', '_', $name), addcslashes((string) $value,'"'));
+            $vals[] = sprintf('%s="%s"', str_replace(' ', '_', $name), addcslashes((string) $value, '"'));
         }
         return implode(' ', $vals);
     }

@@ -162,7 +162,7 @@ class DrivvoProvider implements ProviderInterface
         $vname = "Drivvo Car";
         $this->output_filename .= $vname;
         $description="Imported";
-        
+
         $vehicle = new Vehicle(
             $vname,
             $description, // Use Notes as description
@@ -194,7 +194,7 @@ class DrivvoProvider implements ProviderInterface
                 $entry->setDate($this->normalizeDate((string)$data[1]));
                 $entry->setOdo((int)$data[0]);
                 $entry->setFuel((float)$data[5]);
-                $entry->setVolumePrice((double)$data[3]);
+                $entry->setVolumePrice((float)$data[3]);
 
                 //Full fillup
                 //In drivvo this is translated phrase - yes/no, si, no etc...
@@ -209,7 +209,6 @@ class DrivvoProvider implements ProviderInterface
 
                 $out->writeFuelLog($entry);
             }
-
         } while (!$in->eof() && $data && strpos($data[0] ?? '', '#', 0) !== 0);
     }
 
@@ -234,7 +233,7 @@ class DrivvoProvider implements ProviderInterface
                 $cost = new Cost();
                 $cost->setOdo((int)$data[0]);
                 $cost->setDate($this->normalizeDate((string)$data[1]));
-                $cost->setCost((double)$data[2]);
+                $cost->setCost((float)$data[2]);
                 $cost->setCostCategoryId(2);
                 $cost->setTitle(trim($data[3] ?? ''));
                 $cost->setNotes(trim($data[6] ?? ''));
@@ -264,14 +263,13 @@ class DrivvoProvider implements ProviderInterface
                 $cost = new Cost();
                 $cost->setOdo((int)$data[0]);
                 $cost->setDate($this->normalizeDate((string)$data[1]));
-                $cost->setCost((double)$data[2]);
+                $cost->setCost((float)$data[2]);
                 $cost->setCostCategoryId(1);
                 $cost->setTitle(trim($data[3] ?? ''));
                 $cost->setNotes(trim($data[5] ?? ''));
                 $out->writeCost($cost);
             }
         } while (!$in->eof() && strpos($data[0] ?? '', '#', 0) !== 0);
-
     }
 
     /**

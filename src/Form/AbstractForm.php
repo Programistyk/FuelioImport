@@ -11,7 +11,8 @@ namespace FuelioImporter\Form;
  * @package FuelioImporter\Form
  * @author Kamil Kamiński
  */
-abstract class AbstractForm implements FormInterface {
+abstract class AbstractForm implements FormInterface
+{
     /**
      * @var FormFieldInterface[] Internal array of form fields
      */
@@ -72,7 +73,7 @@ abstract class AbstractForm implements FormInterface {
     public function getData(): ?iterable
     {
         $out = [];
-        foreach($this->fields as $name => $field) {
+        foreach ($this->fields as $name => $field) {
             $data = null;
             if ($field->isValid()) {
                 $data = $field->getValue();

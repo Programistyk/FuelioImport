@@ -44,7 +44,7 @@ class Cost implements BackupEntryInterface
     protected int $is_income = 0;
     /** @var integer Unique cost id */
     protected int $unique_id;
-    
+
     public function setTitle(string $sTitle): void
     {
         if (empty($sTitle)) {
@@ -52,54 +52,54 @@ class Cost implements BackupEntryInterface
         }
         $this->title = $sTitle;
     }
-    
+
     public function setDate(string $sDate): void
     {
         $dt = new \DateTime($sDate);
         $this->date = $dt->format(FuelioBackupBuilder::DATE_FORMAT);
     }
-    
+
     public function setOdo(int $iOdo): void
     {
         $this->odo = $iOdo;
     }
-    
+
     public function setCostCategoryId(int $iId): void
     {
         $this->cost_category_id = $iId;
     }
-    
+
     public function setNotes(string $sNotes): void
     {
         $this->notes = $sNotes;
     }
-    
+
     public function setCost(float $dCost): void
     {
         $this->cost = $dCost;
         $this->setIsIncome($dCost < 0);
     }
-    
+
     public function setFlag(int $flag): void
     {
         $this->flag = $flag;
     }
-    
+
     public function setIdR(int $iId): void
     {
         $this->idR = $iId;
     }
-    
+
     public function setRead(bool $bRead): void
     {
         $this->read = (int) $bRead;
     }
-    
+
     public function setReminderOdo(int $iOdo): void
     {
         $this->remindOdo = $iOdo;
     }
-    
+
     public function setReminderDate(string $sDate): void
     {
         $dt = new \DateTime($sDate);
@@ -111,7 +111,7 @@ class Cost implements BackupEntryInterface
         $this->repeat_odo = $iOdo;
     }
 
-    public function setRepeatMonths(int $sMonths):void
+    public function setRepeatMonths(int $sMonths): void
     {
         $this->repeat_months = $sMonths;
     }
@@ -130,10 +130,10 @@ class Cost implements BackupEntryInterface
     {
         return $this->date;
     }
-    
+
     public function getData(): array
     {
-        $vars = get_object_vars($this); 
+        $vars = get_object_vars($this);
         return array_values($vars);
     }
 }

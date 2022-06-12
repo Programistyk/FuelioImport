@@ -8,7 +8,8 @@ namespace FuelioImporter;
  * Interface for generic Fuelio file entries
  * @author Kamil Kamiński
  */
-interface BackupEntryInterface {
+interface BackupEntryInterface
+{
     /**
      * Returns array for fputcsv
      * @return array<null|int|string|float>

@@ -151,7 +151,6 @@ class FuellogProvider implements ProviderInterface
             }
 
             $this->vehicles[$key] = $line;
-
         } while (!$in->eof() && strpos($line[0], '#', 0) !== 0);
 
         // If user provided a valid index, select that vehicle
@@ -210,12 +209,12 @@ class FuellogProvider implements ProviderInterface
             if ($data_key !== $this->vehicle_key) {
                 continue;
             }
-            
+
             $entry = new FuelLogEntry();
             $entry->setDate($this->normalizeDate($data[2] ?? ''));
             $entry->setOdo((int)$data[3]);
             $entry->setFuel((float)$data[4]);
-            $entry->setVolumePrice((double)$data[5]);
+            $entry->setVolumePrice((float)$data[5]);
             $entry->setFullFillup($data[6] !== '1');
             $entry->setNotes((string)$data[7]);
 
@@ -255,7 +254,7 @@ class FuellogProvider implements ProviderInterface
             }
 
             $cost = new Cost();
-            $cost->setCost((double)$data[5]);
+            $cost->setCost((float)$data[5]);
             $cost->setCostCategoryId(FuelioBackupBuilder::SAFE_CATEGORY_ID);
             $cost->setDate($this->normalizeDate($data[3] ?? ''));
             $cost->setTitle(trim($data[2] ?? ''));
@@ -264,9 +263,7 @@ class FuellogProvider implements ProviderInterface
             $cost->setReminderDate($this->convertCostReminder($this->normalizeDate($data[3] ?? ''), $data[7] ?? ''));
             $cost->setRepeatMonths($this->convertRepeatMonths($data[7] ?? ''));
             $out->writeCost($cost);
-
         } while (!$in->eof() && strpos($data[0] ?? '', '#', 0) !== 0);
-
     }
 
     /**
@@ -299,10 +296,10 @@ class FuellogProvider implements ProviderInterface
         /* Based on FuelLog's explanations.txt */
 
         switch ((int)$raw) {
-            case 1 : return Vehicle::KILOMETERS;
-            case 2 : return Vehicle::MILES;
-            case 3 : throw new InvalidUnitException('Hours as distance units are not supported.');
-            default : throw new InvalidUnitException('Unsupported distance unit: ' . substr($raw, 1, 10));
+            case 1: return Vehicle::KILOMETERS;
+            case 2: return Vehicle::MILES;
+            case 3: throw new InvalidUnitException('Hours as distance units are not supported.');
+            default: throw new InvalidUnitException('Unsupported distance unit: ' . substr($raw, 1, 10));
         }
     }
 
@@ -404,7 +401,7 @@ class FuellogProvider implements ProviderInterface
         }
         $new_date = new \DateTime($sDate);
 
-        switch((int)$raw_recurrence) {
+        switch ((int)$raw_recurrence) {
             case 0 : return Cost::EMPTY_DATE; // One-time
             case 1 : $step = 'P1D'; break; // Daily cost
             case 2 : $step = 'P1W'; break; // Weekly cost
@@ -428,7 +425,7 @@ class FuellogProvider implements ProviderInterface
      */
     protected function convertRepeatMonths(string $raw_recurrence): int
     {
-        switch((int)$raw_recurrence) {
+        switch ((int)$raw_recurrence) {
             case 3 : return 1;
             case 4 : return 2;
             case 5 : return 12;

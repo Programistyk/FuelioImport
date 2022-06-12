@@ -21,8 +21,8 @@ use SimpleXMLElement;
 use SplFileObject;
 use ZipArchive;
 
-class AcarProvider implements ProviderInterface {
-
+class AcarProvider implements ProviderInterface
+{
     // Car name
     protected string $car_name = 'aCar import';
     /** @var array<string, array<string|int>|false> List of files in zip archive */
@@ -74,7 +74,8 @@ class AcarProvider implements ProviderInterface {
     }
 
     // @see IConverter
-    public function processFile(SplFileObject $in, ?iterable $form_data): FuelioBackupBuilder {
+    public function processFile(SplFileObject $in, ?iterable $form_data): FuelioBackupBuilder
+    {
         if (!$form_data) {
             throw new FormValidatorException('Missing form data, you need to choose vehicle #');
         }
@@ -132,7 +133,8 @@ class AcarProvider implements ProviderInterface {
     }
 
     // @see IConverter
-    public function getCard(): CardInterface {
+    public function getCard(): CardInterface
+    {
         return new AcarCard();
     }
 
@@ -238,12 +240,12 @@ class AcarProvider implements ProviderInterface {
      * @return integer Vehicle constant
      * @throws InvalidUnitException On unsupported unit
      */
-    protected function getFuelUnit(SimpleXMLElement $vehicleNode): int {
+    protected function getFuelUnit(SimpleXMLElement $vehicleNode): int
+    {
         // New aCar version stores volume unit per vehicle, not globally
         if (array_key_exists('acar.volume-unit', $this->preferences)) {
             $volume_unit = $this->preferences['acar.volume-unit'];
-        }
-        else {
+        } else {
             $volume_unit = (string)$vehicleNode->{'volume-unit'};
         }
         switch ($volume_unit) {
@@ -271,8 +273,7 @@ class AcarProvider implements ProviderInterface {
         // New aCar version stores distance unit per vehicle, not globally
         if (array_key_exists('acar.distance-unit', $this->preferences)) {
             $distance_unit = $this->preferences['acar.distance-unit'];
-        }
-        else {
+        } else {
             $distance_unit = (string)$vehicleNode->{'distance-unit'};
         }
         switch ($distance_unit) {
@@ -320,7 +321,8 @@ class AcarProvider implements ProviderInterface {
      * @throws InvalidFileFormatException
      * @throws FormValidatorException
      */
-    protected function getVehicle(int $iVehicle, ZipArchive $in): SimpleXMLElement {
+    protected function getVehicle(int $iVehicle, ZipArchive $in): SimpleXMLElement
+    {
         $stream = $in->getStream('vehicles.xml');
         $xml = new \SimpleXMLElement(stream_get_contents($stream));
         if (!$xml) {
@@ -352,7 +354,7 @@ class AcarProvider implements ProviderInterface {
      * @param ZipArchive $in Input archive
      * @param FuelioBackupBuilder $out Output file
      */
-    protected function processFuellings(SimpleXMLElement $data, ZipArchive $in, FuelioBackupBuilder $out):void
+    protected function processFuellings(SimpleXMLElement $data, ZipArchive $in, FuelioBackupBuilder $out): void
     {
         $out->writeFuelLogHeader();
 
@@ -425,14 +427,11 @@ class AcarProvider implements ProviderInterface {
         // Depending on aCar version, this data are in services.xml or event-subtypes.xml
         if ($in->statName('event-subtypes.xml') !== false) {
             $this->readNewServiceDefinition(new \SimpleXMLElement(stream_get_contents($in->getStream('event-subtypes.xml'))));
-        }
-
-        else if ($in->statName('services.xml') !== false) {
+        } elseif ($in->statName('services.xml') !== false) {
             $this->readOldServiceDefinition(new \SimpleXMLElement(stream_get_contents($in->getStream('services.xml'))));
         }
 
         throw new InvalidFileFormatException();
-
     }
 
     /**
@@ -480,8 +479,7 @@ class AcarProvider implements ProviderInterface {
         // Depending on aCar version, this data are in expenses.xml or event-subtypes.xml
         if ($in->statName('event-subtypes.xml') !== false) {
             $this->readNewExpensesAsCategories(new \SimpleXMLElement(stream_get_contents($in->getStream('event-subtypes.xml'))));
-        }
-        else if ($in->statName('expenses.xml') !== false) {
+        } elseif ($in->statName('expenses.xml') !== false) {
             $this->readOldExpensesAsCategories(new \SimpleXMLElement(stream_get_contents($in->getStream('expenses.xml'))));
         }
         throw new InvalidFileFormatException();
@@ -670,7 +668,7 @@ class AcarProvider implements ProviderInterface {
                 $type = (string)$event_record->type;
                 if ($type === 'expense') {
                     $this->processExpense($event_record, $out);
-                } else if ($type === 'service') {
+                } elseif ($type === 'service') {
                     $this->processService($event_record, $out);
                 }
             }
@@ -705,7 +703,6 @@ class AcarProvider implements ProviderInterface {
 
     protected function getFuelType(int $iAcarFuelType): ?int
     {
-
         if (!$this->fuel_types) {
             return null;
         }
@@ -719,7 +716,7 @@ class AcarProvider implements ProviderInterface {
         $name = $this->acar_fuels[$iAcarFuelType]['name'];
 
         switch ($name) {
-            case 'Autogas/LPG' : $name = 'LPG/GPL'; break;
+            case 'Autogas/LPG': $name = 'LPG/GPL'; break;
             case 'CNG - Methane': $name = 'CNG'; break;
             case 'GPL': $name = 'GPL/LPG'; break;
         }
@@ -727,9 +724,9 @@ class AcarProvider implements ProviderInterface {
         $fuelio_type = $this->fuel_types->findIdByName($name);
         if ($fuelio_type === -1) {
             // Not found, lets assign generic category
-            switch($this->acar_fuels[$iAcarFuelType]['category']) {
-                case 'gasoline' : return FuelTypes::FUEL_ROOT_GASOLINE;
-                case 'diesel' : return FuelTypes::FUEL_ROOT_DIESEL;
+            switch ($this->acar_fuels[$iAcarFuelType]['category']) {
+                case 'gasoline': return FuelTypes::FUEL_ROOT_GASOLINE;
+                case 'diesel': return FuelTypes::FUEL_ROOT_DIESEL;
                 case 'bioalcohol': return FuelTypes::FUEL_ROOT_ETHANOL;
                 case 'gas': return FuelTypes::FUEL_ROOT_LPG;
             }

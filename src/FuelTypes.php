@@ -10,7 +10,8 @@ namespace FuelioImporter;
  * @version 20180124
  * @psalm-type TypeEntry array{name: string, active: int, parent: null|mixed}
  */
-class FuelTypes {
+class FuelTypes
+{
     public const FUEL_ROOT_GASOLINE = 100;
     public const FUEL_ROOT_DIESEL = 200;
     public const FUEL_ROOT_ETHANOL = 300;
@@ -27,7 +28,7 @@ class FuelTypes {
     public function addType(?int $root, int $id, string $name, bool $active): void
     {
         $element = ['name' => trim($name), 'active' => (int) $active, 'parent' => null];
-        if ($root === null && !empty($name) && !empty($id) && ($root%100 === 0) ) {
+        if ($root === null && !empty($name) && !empty($id) && ($root%100 === 0)) {
             $this->list[$id] = $element;
             return;
         }
@@ -82,11 +83,10 @@ class FuelTypes {
             throw new \RuntimeException('Invalid FuelTypes.csv format!');
         }
 
-        while(!feof($fh)) {
+        while (!feof($fh)) {
             $line = fgetcsv($fh);
             $root = trim($line[1]);
             $list->addType($root === '<null>' ? null : (int) $root, (int) $line[0], $line[2], (bool) $line[3]);
-
         }
 
         fclose($fh);

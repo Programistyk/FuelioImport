@@ -9,7 +9,8 @@ namespace FuelioImporter;
  * @author Kamil Kamiński
  * @version 20180124
  */
-class FuelLogEntry implements BackupEntryInterface {
+class FuelLogEntry implements BackupEntryInterface
+{
     /** @var string Fueling timestamp, valid for \DateTime constructor */
     protected string $data;
     /** @var integer Odometer reading (total) */
@@ -75,10 +76,9 @@ class FuelLogEntry implements BackupEntryInterface {
     {
         $this->latitude = $dLatitude;
         $this->longitude = $dLongitude;
-        
+
         // Fuelio requires city name to display geo data on map
-        if (!empty($dLatitude) && empty($this->city))
-        {
+        if (!empty($dLatitude) && empty($this->city)) {
             $this->setCity('GPS');
         }
     }
@@ -87,12 +87,12 @@ class FuelLogEntry implements BackupEntryInterface {
     {
         $this->city = $sCity;
     }
-    
+
     public function setNotes(string $sNotes): void
     {
         $this->notes = $sNotes;
     }
-    
+
     public function setMissedEntries(int $iMissed): void
     {
         $this->missed_entries = $iMissed;

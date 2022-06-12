@@ -9,20 +9,20 @@ namespace FuelioImporter;
  * @author Kamil Kamiński
  * @version 20180124
  */
-class Vehicle implements BackupEntryInterface {
-
+class Vehicle implements BackupEntryInterface
+{
     /** Distance unit */
     public const KILOMETERS = 0;
     /** Distance unit */
     public const MILES = 1;
-    
+
     /** Fuel unit */
     public const LITRES = 0;
     /** Fuel unit */
     public const GALLONS_US = 1;
     /** Fuel unit */
     public const GALLONS_UK = 2;
-    
+
     /** Consumption unit: l/100km */
     public const L_PER_100KM = 0;
     /** Consumption unit: mpg (us) */
@@ -38,37 +38,37 @@ class Vehicle implements BackupEntryInterface {
 
     /** @var string Car name */
     protected string $name;
-    
+
     /** @var string Car description */
     protected string $description;
-    
+
     /** @var integer Distance unit */
     protected int $distance_unit;
-    
+
     /** @var integer Fuel unit */
     protected int $fuel_unit;
-    
+
     /** @var integer Consuption unit */
     protected int $consumption_unit;
-    
+
     /** @var string CSV date format, constant */
     protected string $csv_date_format = 'dd.MM.yyyy';
-    
+
     /** @var string Vehicle Identification Number */
     protected string $vin;
-    
+
     /** @var string Insurance policy number */
     protected string $insurance;
-    
+
     /** @var string Plate number */
     protected string $plate;
-    
+
     /** @var string Vehicle make */
     protected string $make;
-    
+
     /** @var string Vehicle model */
     protected string $model;
-    
+
     /** @var string Vehicle production year */
     protected string $year;
 

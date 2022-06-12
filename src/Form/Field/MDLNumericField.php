@@ -22,13 +22,15 @@ class MDLNumericField extends NumericField
                         'class' => 'mdl-textfield__input'
                     ]
                 ],
-                $options)
+                $options
+            )
         );
     }
 
     public function render(): string
     {
-        return sprintf('<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">%s<label class="mdl-textfield__label" for="sample4">%s</label><span class="mdl-textfield__error">Input is not a number!</span></div>',
+        return sprintf(
+            '<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">%s<label class="mdl-textfield__label" for="sample4">%s</label><span class="mdl-textfield__error">Input is not a number!</span></div>',
             parent::render(),
             $this->options['label']
         );

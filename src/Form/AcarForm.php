@@ -6,8 +6,8 @@ namespace FuelioImporter\Form;
 
 use FuelioImporter\Form\Field\MDLNumericField;
 
-class AcarForm extends AbstractForm {
-
+class AcarForm extends AbstractForm
+{
     public function __construct()
     {
         $this[] = new MDLNumericField('vehicle_id', array('min' => 1, 'label' => 'Export vehicle #', 'value' => 1));

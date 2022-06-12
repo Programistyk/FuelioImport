@@ -9,8 +9,8 @@ namespace FuelioImporter\Form;
  * @package FuelioImporter\Form
  * @author Kamil Kamiński
  */
-interface FormFieldInterface {
-
+interface FormFieldInterface
+{
     /**
      * Field name, used for name= attribute
      */

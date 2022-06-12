@@ -1,4 +1,5 @@
 <?php
+
 namespace FuelioImporter\Card;
 
 use FuelioImporter\Form\FuelLogForm;

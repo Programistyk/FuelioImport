@@ -25,7 +25,8 @@ class MotostatProvider implements ProviderInterface
     /** @var list<Cost> */
     protected array $costs = [];
 
-    public function __construct() {
+    public function __construct()
+    {
         // keys are normalized categories names (see findCategory)
         $this->categories = [
             'purchase_price' => new CostCategory(FuelioBackupBuilder::SAFE_CATEGORY_ID + 1, 'Purchase price'),

@@ -18,7 +18,7 @@ class CostCategory implements BackupEntryInterface
     private int $priority;
     /** @var string Category color, #rrggbb format **/
     private string $color;
-    
+
     public function __construct(int $type_id, string $name, int $priority = 0, string $color = '')
     {
         $this->type_id = $type_id;
@@ -26,7 +26,7 @@ class CostCategory implements BackupEntryInterface
         $this->priority = $priority;
         $this->color = $color;
     }
-    
+
     public function getTypeId(): int
     {
         return $this->type_id;
@@ -36,7 +36,7 @@ class CostCategory implements BackupEntryInterface
     {
         $this->type_id = $typeId;
     }
-    
+
     public function getName(): string
     {
         return $this->name;
@@ -51,10 +51,10 @@ class CostCategory implements BackupEntryInterface
     {
         return $this->color;
     }
-    
+
     public function getData(): array
     {
-        $vars = get_object_vars($this); 
+        $vars = get_object_vars($this);
         return array_values($vars);
     }
 }

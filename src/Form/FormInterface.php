@@ -11,7 +11,8 @@ namespace FuelioImporter\Form;
  * @extends \ArrayAccess<string, FormFieldInterface>
  * @extends \IteratorAggregate<string, FormFieldInterface>
  */
-interface FormInterface extends \ArrayAccess, \IteratorAggregate {
+interface FormInterface extends \ArrayAccess, \IteratorAggregate
+{
     /**
      * Processes $_POST data for form
      * @param array<string,mixed> $post_data PHP's $_POST
