@@ -335,7 +335,7 @@ class DrivvoProvider implements IConverter
             $csvData[5],
             $this->dist_unit,
             $this->fuel_unit,
-            Vehicle::L_PER_100KM,
+            Vehicle::L_PER_100KM
         );
 
         $vehicle->setModel($csvData[1]);
