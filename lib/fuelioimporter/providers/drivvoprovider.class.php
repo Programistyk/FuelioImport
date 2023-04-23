@@ -6,6 +6,7 @@ use FuelioImporter\Cost;
 use FuelioImporter\CostCategory;
 use FuelioImporter\FuelioBackupBuilder;
 use FuelioImporter\FuelLogEntry;
+use FuelioImporter\FuelTypes;
 use FuelioImporter\IConverter;
 use FuelioImporter\InvalidFileFormatException;
 use FuelioImporter\Vehicle;
@@ -39,6 +40,10 @@ class DrivvoProvider implements IConverter
 
     const EXPENSE_HEADERS = [
         '##Expense',
+    ];
+
+    const VEHICLE_HEADERS = [
+        '##Vehicle'
     ];
 
     const TRUTHY = [
@@ -154,18 +159,13 @@ class DrivvoProvider implements IConverter
         // Write out selected vehicle
         $out->writeVehicleHeader();
 
-        // Prepare Vehicle
-        $vname = "Drivvo Car";
-        $this->output_filename .= $vname;
-        $description="Imported";
-        
-        $vehicle = new Vehicle(
-            $vname,
-            $description, // Use Notes as description
-            $this->dist_unit,
-            $this->fuel_unit,
-            0
-        );
+        $this->rewindToHeader($in, self::VEHICLE_HEADERS);
+        if ($in->eof()) {
+            $vehicle = $this->fallbackDefaultVehicle();
+        } else {
+            $vehicle = $this->readVehicle($in);
+        }
+
         $out->writeVehicle($vehicle);
     }
 
@@ -190,6 +190,7 @@ class DrivvoProvider implements IConverter
                 $entry->setDate($this->normalizeDate($data[1]));
                 $entry->setOdo((double)$data[0]);
                 $entry->setFuel((double)$data[5]);
+                $entry->setFuelType($this->getFuelType($data[2]));
                 $entry->setVolumePrice((double)$data[3]);
 
                 //Full fillup
@@ -293,5 +294,54 @@ class DrivvoProvider implements IConverter
         do {
             $line = $file->fgetcsv();
         } while (!$file->eof() && !in_array($line[0], $headers, true));
+    }
+
+    protected function getFuelType(string $fuelType): ?int
+    {
+        switch (mb_strtolower($fuelType)) {
+            case 'lpg' : return FuelTypes::FUEL_ROOT_LPG;
+            case 'gasoline': return FuelTypes::FUEL_ROOT_GASOLINE;
+            default: return null;
+        }
+    }
+
+    protected function fallbackDefaultVehicle(): Vehicle
+    {
+        // Prepare Vehicle
+        $vname = "Drivvo Car";
+        $this->output_filename .= $vname;
+        $description="Imported";
+
+        return new Vehicle(
+            $vname,
+            $description, // Use Notes as description
+            $this->dist_unit,
+            $this->fuel_unit,
+            0
+        );
+    }
+
+    protected function readVehicle(SplFileObject $in): Vehicle
+    {
+        $vehicleHeaders = $in->fgetcsv();
+        if (count($vehicleHeaders) !== 6) {
+            return $this->fallbackDefaultVehicle();
+        }
+
+        $csvData = $in->fgetcsv();
+
+        $vehicle = new Vehicle(
+            trim($csvData[0]),
+            $csvData[5],
+            $this->dist_unit,
+            $this->fuel_unit,
+            Vehicle::L_PER_100KM,
+        );
+
+        $vehicle->setModel($csvData[1]);
+        $vehicle->setPlate($csvData[2]);
+        $vehicle->setYear($csvData[4]);
+
+        return $vehicle;
     }
 }

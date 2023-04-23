@@ -36,7 +36,7 @@ class FuelLogEntry implements IBackupEntry {
     /** @var int Tank number */
     protected $tank_number = 1;
     /** @var int Tank number as id from FuelType */
-    protected $fuel_type;
+    protected $fuel_type = null;
     /** @var double Volume price*/
     protected $volume_price;
 
@@ -94,7 +94,7 @@ class FuelLogEntry implements IBackupEntry {
     }
 
     public function setFuelType($nFuelType) {
-        $this->fuel_type = (int)$nFuelType;
+        $this->fuel_type = is_null($nFuelType) ? null : (int)$nFuelType;
     }
 
     public function setVolumePrice($dVolumePrice) {
