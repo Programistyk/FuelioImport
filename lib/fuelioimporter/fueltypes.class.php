@@ -10,9 +10,10 @@ namespace FuelioImporter;
 class FuelTypes {
     const FUEL_ROOT_GASOLINE = 100;
     const FUEL_ROOT_DIESEL = 200;
-    const FUEL_ROOT_LPG = 300;
-    const FUEL_ROOT_CNG = 400;
-    const FUEL_ROOT_ETHANOL = 500;
+    const FUEL_ROOT_ETHANOL = 300;
+    const FUEL_ROOT_LPG = 400;
+    const FUEL_ROOT_CNG = 500;
+    const FUEL_ELECTRIC = 600;
 
     protected $list;
 
