@@ -342,6 +342,34 @@ class DrivvoProvider implements IConverter
         $vehicle->setPlate($csvData[2]);
         $vehicle->setYear($csvData[4]);
 
+        // Detect most common fuel types
+        $fuelTypes = [];
+        $this->rewindToHeader($in, self::FUELLING_HEADERS);
+        if ($in->eof()) {
+            return $vehicle;
+        }
+        $in->fgetcsv(); // skip header
+        do {
+            $data = $in->fgetcsv();
+            if ($data && $data[0] !== '' && $data[0] > 0) {
+                if (!empty($data[2])) {
+                    $normalizedFuelType = mb_strtolower($data[2]);
+                    if (!isset($fuelTypes[$normalizedFuelType])) {
+                        $fuelTypes[$normalizedFuelType] = 1;
+                    } else {
+                        $fuelTypes[$normalizedFuelType]++;
+                    }
+                }
+            }
+        } while (!$in->eof() && strpos($data[0], '#', 0) !== 0);
+
+        asort($fuelTypes);
+        $vehicle->setTankCount(max(1, count($fuelTypes)));
+        $idx = 1;
+        foreach ($fuelTypes as $fuelType => $amount) {
+            $vehicle->setTankType($idx++, $this->getFuelType($fuelType));
+        }
+
         return $vehicle;
     }
 }
