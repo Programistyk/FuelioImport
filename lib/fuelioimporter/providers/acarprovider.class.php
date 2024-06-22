@@ -277,6 +277,7 @@ class AcarProvider implements IConverter {
             case 'L/100km':
                 return Vehicle::L_PER_100KM;
             case 'MPG (UK)': // TODO: To Confirm
+            case 'MPG (Imperial)':
                 return Vehicle::MPG_UK;
             case 'MPG (US)':
                 return Vehicle::MPG_US;
