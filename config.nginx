@@ -10,7 +10,7 @@ server {
     error_log /var/log/nginx/error.log;
 
     location / {
-        index index.php;
+        index index.html;
         try_files $uri $uri/ =404;
     }
     
@@ -23,6 +23,7 @@ server {
 
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         fastcgi_param DOCUMENT_ROOT $realpath_root;
+        add_header 'Access-Control-Expose-Headers' 'Content-Disposition' always;
     }
 
     location ~ /\. {
